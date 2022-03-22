@@ -10,7 +10,7 @@ function startWizard() {
     let guesses  = [];
 
     // the wizard introduces themself
-    alert("I am a mind reading wizard. I can guess the number you're thinking of.")
+    alert("I am an amazing mind reading wizard. I can guess the number you're thinking of.")
     
     // ask the user for a number between 1 and maxGuess
     alert("Think of a number between 1 and " + maxGuess);
