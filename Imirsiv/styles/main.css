@@ -13,12 +13,18 @@
 }
 
 #notecards {
-    width: 50%;
+    /* width: 50%; */
 }
 
 .notecard {
+    width: 300px;
     border: 1px solid black;
     margin: 10px;
     padding: 10px;
-    background-image: url("../images/indexCard.png");   
+    background-image: url("../images/indexCard.png");
+}
+
+.draggable {
+    cursor: move;
+    user-select: none;
 }
