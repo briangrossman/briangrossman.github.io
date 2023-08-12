@@ -1,5 +1,6 @@
 /* 
     TODO:
+    - Change name from ball
     - Check on air drag. It seems to be working... try to find a few tests
     - Is this helpful: https://www.longdom.org/open-access/buoyancy-explains-terminal-velocity-in-skydiving-15928.html ? 
     - Incorporate Carly's images
@@ -79,6 +80,8 @@ var accelerationText;
 var velocityText;
 var YPositionText;
 var timeElapsedText;
+var buttonPlayPauseDownload;
+var buttonRestart;
 
 
 // Time Vars (in seconds)
@@ -99,6 +102,7 @@ function preload ()
     this.load.image('sky', 'assets/sky.png');
     this.load.image('ball', 'assets/skydiver.png');
     this.load.spritesheet('buttonPlayPauseDownload', 'assets/buttonPlayPause.png', { frameWidth: 50, frameHeight: 50 });
+    this.load.image('buttonRestart', 'assets/buttonRestart.png');
 }
 
 function create ()
@@ -116,10 +120,10 @@ function create ()
     ball.setScale(.04);
 
     // Text
-    accelerationText    = this.add.text(300,  70, `Acceleration: ${-1 * currAcceleration.toFixed(2)} meters/second^2`, { fontSize: '24px', fill: '#FFF' });
-    velocityText        = this.add.text(300, 100, `    Velocity: ${-1 * currYVelocity.toFixed(2)} meters/second`, { fontSize: '24px', fill: '#FFF' });
-    YPositionText       = this.add.text(300, 130, `      Height: ${((screenHeight * metersPerPixel) - currYPosition).toFixed(2)} meters`, { fontSize: '24px', fill: '#FFF' });
-    timeElapsedText     = this.add.text(300, 160, `        Time: ${totalTimeElapsed.toFixed(2)} seconds`, { fontSize: '24px', fill: '#FFF' });
+    accelerationText    = this.add.text(400, 270, `Acceleration: ${-1 * currAcceleration.toFixed(2)} meters/second^2`, { fontSize: '24px', fill: '#FFF' });
+    velocityText        = this.add.text(400, 300, `    Velocity: ${-1 * currYVelocity.toFixed(2)} meters/second`, { fontSize: '24px', fill: '#FFF' });
+    YPositionText       = this.add.text(400, 330, `      Height: ${((screenHeight * metersPerPixel) - currYPosition).toFixed(2)} meters`, { fontSize: '24px', fill: '#FFF' });
+    timeElapsedText     = this.add.text(400, 360, `        Time: ${totalTimeElapsed.toFixed(2)} seconds`, { fontSize: '24px', fill: '#FFF' });
 
     // background
     sky.setScale(2);
@@ -142,18 +146,28 @@ function create ()
         frames: [ { key: 'buttonPlayPauseDownload', frame: 2 } ],
         frameRate: 0
     });
-    buttonPlayPauseDownload = this.add.sprite(830, 40, 'buttonPlayPauseDownload');
+    buttonPlayPauseDownload = this.add.sprite(895, 40, 'buttonPlayPauseDownload');
     buttonPlayPauseDownload.anims.play('play', true); // initialize to play
     buttonPlayPauseDownload.setInteractive();
     // when clicked, update appearance and toggle simulation running
     buttonPlayPauseDownload.on('pointerdown', () => {
         if (simRunning) {
-            buttonPlayPauseDownload.anims.play('play', true); // initialize to play
+            buttonPlayPauseDownload.anims.play('play', true);
         } else {
-            buttonPlayPauseDownload.anims.play('pause', true); // initialize to play
+            buttonPlayPauseDownload.anims.play('pause', true);
         }
         toggleSimRunning();
     });
+
+    buttonRestart = this.add.sprite(960, 40, 'buttonRestart');
+    buttonRestart.setInteractive();
+    // when clicked, update appearance and toggle simulation running
+    buttonRestart.on('pointerdown', () => {
+        // reset play button
+        buttonPlayPauseDownload.anims.play('play', true);
+        startOver();
+    });
+
 
 
 }
@@ -194,17 +208,19 @@ function update ()
             currYVelocity    = initYVelocity + (gravitationalAcceleration * totalTimeElapsed);
             currYPosition    = initYPosition + (initYVelocity * totalTimeElapsed) + (0.5 * gravitationalAcceleration * totalTimeElapsed * totalTimeElapsed);
         }
-        ball.y = currYPosition;
-
-        // update text
-        accelerationText.setText(`Acceleration: ${-1 * currAcceleration.toFixed(2)} meters/second^2`);  // negate due to inverted y-axis
-        velocityText.setText(`    Velocity: ${-1 * currYVelocity.toFixed(2)} meters/second`);           // negate due to inverted y-axis
-        YPositionText.setText(`      Height: ${((screenHeight * metersPerPixel) - currYPosition).toFixed(2)} meters`);     // subtract from screenHeigh to get height
-        timeElapsedText.setText(`        Time: ${totalTimeElapsed.toFixed(2)} seconds`);
-
         // set lastTimeCheck
         lastTimeCheck = currTime;
     } 
+
+    // update ball position
+    ball.y = currYPosition;
+
+    // update text
+    accelerationText.setText(`Acceleration: ${-1 * currAcceleration.toFixed(2)} meters/second^2`);  // negate due to inverted y-axis
+    velocityText.setText(`    Velocity: ${-1 * currYVelocity.toFixed(2)} meters/second`);           // negate due to inverted y-axis
+    YPositionText.setText(`      Height: ${((screenHeight * metersPerPixel) - currYPosition).toFixed(2)} meters`);     // subtract from screenHeigh to get height
+    timeElapsedText.setText(`        Time: ${totalTimeElapsed.toFixed(2)} seconds`);
+
 
 }
 
@@ -230,4 +246,8 @@ function startOver() {
     currYPosition       = initYPosition;
     currYVelocity       = initYVelocity;
     currAcceleration    = initAcceleration;
+    totalTimeElapsed    = 0;
+
+    // reset simRunning
+    simRunning = false;
 }
