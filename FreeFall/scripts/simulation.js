@@ -14,16 +14,26 @@
 var gravitationalAcceleration = 9.81 // positive because of inverted y axis;
 
 // Initial values
-var screenHeight        = 1000;
+var screenHeight        = 800;
 var screenWidth         = 1000;
 var initXPosition       = 50;
+
 var initYPosition       = 0;
 var currYPosition       = initYPosition;
+
 var initYVelocity       = 0;
 var currYVelocity       = initYVelocity;
+
 var initAcceleration    = gravitationalAcceleration;
 var currAcceleration    = initAcceleration;
 
+var dragCoefficient     = 0.5;              // Cd: sphere
+var fluidDensity        = 1.23              //  ρ: kg / m^3
+var surfaceArea         = Math.PI * 1 * 1   //  A: radius = 1m
+var dragConstantB       = (dragCoefficient * fluidDensity * surfaceArea)/2 // b is (Cd * ρ * A)/2, i.e. the constants in the drag force. 
+var mass                = 1                 //     kg
+
+startOver();
 
 // config Phaser
 var config = {
@@ -57,7 +67,7 @@ var ball;
 
 // Settings
 var metersPerPixel = 1; // scale size
-var useAirDrag = false;
+var useAirDrag = true;
 
 // HUD
 var accelerationText;
@@ -103,7 +113,7 @@ function create ()
     // Text
     accelerationText    = this.add.text(300,  70, `Acceleration: ${-1 * currAcceleration.toFixed(2)} meters/second^2`, { fontSize: '24px', fill: '#FFF' });
     velocityText        = this.add.text(300, 100, `    Velocity: ${-1 * currYVelocity.toFixed(2)} meters/second`, { fontSize: '24px', fill: '#FFF' });
-    YPositionText       = this.add.text(300, 130, `      Height: ${(screenHeight - currYPosition).toFixed(2)} meters`, { fontSize: '24px', fill: '#FFF' });
+    YPositionText       = this.add.text(300, 130, `      Height: ${((screenHeight * metersPerPixel) - currYPosition).toFixed(2)} meters`, { fontSize: '24px', fill: '#FFF' });
     timeElapsedText     = this.add.text(300, 160, `        Time: ${totalTimeElapsed.toFixed(2)} seconds`, { fontSize: '24px', fill: '#FFF' });
 
 
@@ -127,8 +137,20 @@ function update ()
         
         // get acceleration, velocity, and y position 
         if (useAirDrag) {
-            // air drag
-            nothing();
+            /* air drag
+
+             b is (Cd * ρ * A)/2, i.e. the constants in the drag force. 
+
+              Acceleration = (b * v^2)/m - g
+                  Velocity = sqrt(m*g/b) * tanh( ( t * sqrt(b*g/m) ) + arctanh( v(0) * sqrt(b/(m*g)) ) )
+                  Position = (m/b) * ln( cosh( ( t * sqrt(b*g/m) ) + arctanh( v(0) * sqrt(b/(m*g)) ) )  ) 
+                             - y(0) 
+                             - (m/b) * ln( cosh( arctanh( v(0) * sqrt(b/(m*g)) ) ) )
+
+            */
+            currAcceleration = gravitationalAcceleration - ((dragConstantB * currYVelocity * currYVelocity) /mass);
+            currYVelocity    = Math.sqrt(mass * gravitationalAcceleration / dragConstantB) * Math.tanh( ( totalTimeElapsed * Math.sqrt(dragConstantB * gravitationalAcceleration / mass) ) + Math.atanh( initYVelocity * Math.sqrt(dragConstantB / (mass * gravitationalAcceleration)) ) );
+            currYPosition    = (mass/dragConstantB) * Math.log( Math.cosh( ( totalTimeElapsed * Math.sqrt((dragConstantB*gravitationalAcceleration)/mass) ) + Math.atanh( initYVelocity * Math.sqrt(dragConstantB/(mass*gravitationalAcceleration)) ) ) ) - initYPosition - ((mass/dragConstantB) * Math.log( Math.cosh( Math.atanh( initYVelocity * Math.sqrt(dragConstantB/(mass*gravitationalAcceleration)) ) ) ) )
 
         } else {
             /* no air drag
@@ -146,7 +168,7 @@ function update ()
         // update text
         accelerationText.setText(`Acceleration: ${-1 * currAcceleration.toFixed(2)} meters/second^2`);  // negate due to inverted y-axis
         velocityText.setText(`    Velocity: ${-1 * currYVelocity.toFixed(2)} meters/second`);           // negate due to inverted y-axis
-        YPositionText.setText(`      Height: ${(screenHeight - currYPosition).toFixed(2)} meters`);     // subtract from screenHeigh to get height
+        YPositionText.setText(`      Height: ${((screenHeight * metersPerPixel) - currYPosition).toFixed(2)} meters`);     // subtract from screenHeigh to get height
         timeElapsedText.setText(`        Time: ${totalTimeElapsed.toFixed(2)} seconds`);
 
         // set lastTimeCheck
@@ -171,3 +193,10 @@ function toggleSimRunning() {
 
 }
 
+// start over
+function startOver() {
+    // reset values
+    currYPosition       = initYPosition;
+    currYVelocity       = initYVelocity;
+    currAcceleration    = initAcceleration;
+}
