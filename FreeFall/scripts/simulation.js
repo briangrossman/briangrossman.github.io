@@ -41,7 +41,7 @@ startOver();
 
 // Settings
 var metersPerPixel = 1; // scale size
-var useAirDrag = true;
+var useAirDrag = false;
 
 
 // config Phaser
@@ -90,12 +90,6 @@ var totalTimeElapsed = 0;
 var simRunning = false; 
 
 
-
-
-// TO REVIEW
-var playPause;
-// TO REVIEW
-
 function preload ()
 {
     // preload assets for the game
@@ -103,6 +97,7 @@ function preload ()
     this.load.image('ball', 'assets/skydiver.png');
     this.load.spritesheet('buttonPlayPauseDownload', 'assets/buttonPlayPause.png', { frameWidth: 50, frameHeight: 50 });
     this.load.image('buttonRestart', 'assets/buttonRestart.png');
+    this.load.spritesheet('buttonAirVacuum', 'assets/airVacuum.png', { frameWidth: 100, frameHeight: 100 });
 }
 
 function create ()
@@ -159,6 +154,7 @@ function create ()
         toggleSimRunning();
     });
 
+    // restart button
     buttonRestart = this.add.sprite(960, 40, 'buttonRestart');
     buttonRestart.setInteractive();
     // when clicked, update appearance and toggle simulation running
@@ -167,6 +163,40 @@ function create ()
         buttonPlayPauseDownload.anims.play('play', true);
         startOver();
     });
+
+    // air | vacuum button
+    this.anims.create({
+        key: 'air',
+        frames: [ { key: 'buttonAirVacuum', frame: 0 } ],
+        frameRate: 0
+    });
+    this.anims.create({
+        key: 'vacuum',
+        frames: [ { key: 'buttonAirVacuum', frame: 1 } ],
+        frameRate: 0
+    });
+    buttonAirVacuum = this.add.sprite(935, 125, 'buttonAirVacuum');
+    buttonAirVacuum.anims.play('vacuum', true); // initialize to play
+    buttonAirVacuum.setInteractive();
+    // when clicked, update appearance and toggle simulation running
+    buttonAirVacuum.on('pointerdown', () => {
+        
+        // toggle useAirDrag
+        useAirDrag = !useAirDrag;
+       
+        // update button
+        if (useAirDrag) {
+            buttonAirVacuum.anims.play('air', true);
+        } else {
+            buttonAirVacuum.anims.play('vacuum', true);
+        }
+
+        // reset play button
+        buttonPlayPauseDownload.anims.play('play', true);
+        startOver();
+        
+    });
+
 
 
 
