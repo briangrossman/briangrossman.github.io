@@ -1,5 +1,8 @@
 /* 
     TODO:
+    - Check on air drag. It seems to be working... try to find a few tests
+    - Is this helpful: https://www.longdom.org/open-access/buoyancy-explains-terminal-velocity-in-skydiving-15928.html ? 
+    - Incorporate Carly's images
     - Figure out boyancy thing
 */
 
@@ -16,6 +19,7 @@ var gravitationalAcceleration = 9.81 // positive because of inverted y axis;
 // Initial values
 var screenHeight        = 800;
 var screenWidth         = 1000;
+
 var initXPosition       = 50;
 
 var initYPosition       = 0;
@@ -27,13 +31,17 @@ var currYVelocity       = initYVelocity;
 var initAcceleration    = gravitationalAcceleration;
 var currAcceleration    = initAcceleration;
 
-var dragCoefficient     = 0.5;              // Cd: sphere
+var dragCoefficient     = 1;              // Cd (sphere = .5)
 var fluidDensity        = 1.23              //  ρ: kg / m^3
-var surfaceArea         = Math.PI * 1 * 1   //  A: radius = 1m
+var surfaceArea         = 1.06   //  A (basketball = Math.PI * .119 * .119)
 var dragConstantB       = (dragCoefficient * fluidDensity * surfaceArea)/2 // b is (Cd * ρ * A)/2, i.e. the constants in the drag force. 
-var mass                = 1                 //     kg
-
+var mass                = 90                 //     kg (basketball = .68)
 startOver();
+
+// Settings
+var metersPerPixel = 1; // scale size
+var useAirDrag = true;
+
 
 // config Phaser
 var config = {
@@ -65,9 +73,6 @@ var game = new Phaser.Game(config);
 var sky;
 var ball;
 
-// Settings
-var metersPerPixel = 1; // scale size
-var useAirDrag = true;
 
 // HUD
 var accelerationText;
@@ -85,15 +90,15 @@ var simRunning = false;
 
 
 // TO REVIEW
-var go;
+var playPause;
 // TO REVIEW
 
 function preload ()
 {
     // preload assets for the game
     this.load.image('sky', 'assets/sky.png');
-    this.load.image('ball', 'assets/ball.png');
-    this.load.image('go', 'assets/go.png');
+    this.load.image('ball', 'assets/skydiver.png');
+    this.load.spritesheet('buttonPlayPauseDownload', 'assets/buttonPlayPause.png', { frameWidth: 50, frameHeight: 50 });
 }
 
 function create ()
@@ -108,7 +113,7 @@ function create ()
 
     // object
     ball = this.add.sprite(initXPosition, initYPosition, 'ball');
-    ball.setScale(.2);
+    ball.setScale(.04);
 
     // Text
     accelerationText    = this.add.text(300,  70, `Acceleration: ${-1 * currAcceleration.toFixed(2)} meters/second^2`, { fontSize: '24px', fill: '#FFF' });
@@ -116,14 +121,40 @@ function create ()
     YPositionText       = this.add.text(300, 130, `      Height: ${((screenHeight * metersPerPixel) - currYPosition).toFixed(2)} meters`, { fontSize: '24px', fill: '#FFF' });
     timeElapsedText     = this.add.text(300, 160, `        Time: ${totalTimeElapsed.toFixed(2)} seconds`, { fontSize: '24px', fill: '#FFF' });
 
-
-    // TO REVIEW
+    // background
     sky.setScale(2);
-    go = this.add.sprite(950, 35, 'go');
-    go.setScale(.5);
-    go.setInteractive();
-    go.on('pointerdown', () => toggleSimRunning() );
-    // TO REVIEW
+
+    // buttons
+    
+    // set up button for play | pause | download
+    this.anims.create({
+        key: 'play',
+        frames: [ { key: 'buttonPlayPauseDownload', frame: 0 } ],
+        frameRate: 0
+    });
+    this.anims.create({
+        key: 'pause',
+        frames: [ { key: 'buttonPlayPauseDownload', frame: 1 } ],
+        frameRate: 0
+    });
+    this.anims.create({
+        key: 'download',
+        frames: [ { key: 'buttonPlayPauseDownload', frame: 2 } ],
+        frameRate: 0
+    });
+    buttonPlayPauseDownload = this.add.sprite(830, 40, 'buttonPlayPauseDownload');
+    buttonPlayPauseDownload.anims.play('play', true); // initialize to play
+    buttonPlayPauseDownload.setInteractive();
+    // when clicked, update appearance and toggle simulation running
+    buttonPlayPauseDownload.on('pointerdown', () => {
+        if (simRunning) {
+            buttonPlayPauseDownload.anims.play('play', true); // initialize to play
+        } else {
+            buttonPlayPauseDownload.anims.play('pause', true); // initialize to play
+        }
+        toggleSimRunning();
+    });
+
 
 }
 
