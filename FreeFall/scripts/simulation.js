@@ -3,21 +3,25 @@
     - Forces
        - Show forces
 
+    - Force graphic
+       - Shows force arrows
+       - shows image of object, shaking a little
+
     - Build out different model
        - Allow switching between models
 
     - Check existing model
        - Make sure you believe their working
           - Air model doesn't behave when you start at a point other than 0
-
-    - Force graphic
-       - Shows force arrows
-       - shows image of object, shaking a little
-
-    - Build out skydiver opening chute
+    - Check everything!
 
     - What's the deal with boyancy?
        - Is this helpful: https://www.longdom.org/open-access/buoyancy-explains-terminal-velocity-in-skydiving-15928.html ? 
+
+    - maybe create an interface for the scale?
+
+    - Build out skydiver opening chute
+
 */
 
 /* 
@@ -59,9 +63,13 @@ var currYVelocity;
 var initAcceleration    = 0;
 var currAcceleration;
 
+var gravitationalForce;
+var dragForce;
+
 
 // Settings
-var metersPerPixel = 1; // scale size
+var startingHeight = 1000;
+var metersPerPixel = startingHeight/800; 
 var useAirDrag = false;
 
 // background
@@ -81,6 +89,8 @@ var objectConstantsText;
 var dragCoefficientText;
 var surfaceAreaText;
 var massText;
+var gravitationalForceText;
+var dragForceText;
 
 
 var buttonPlayPauseDownload;
@@ -198,24 +208,27 @@ function create ()
 
     // Background
     sky = this.add.image(500, 500, 'sky');
-    textBackground = this.add.image(710, 410, 'textBackground');
+    textBackground = this.add.image(710, 540, 'textBackground');
     
 
     // Text
-    propertiesText                  = this.add.text(600, 230, `POSITIONAL DATA`, { fontSize: '24px', fill: '#000000' });
-    accelerationText                = this.add.text(550, 270, `Acceleration: ${-1 * currAcceleration.toFixed(2)} meters/second^2`, { fontSize: '16px', fill: '#000000' });
-    velocityText                    = this.add.text(550, 300, `    Velocity: ${-1 * currYVelocity.toFixed(2)} meters/second`, { fontSize: '16px', fill: '#000000' });
-    YPositionText                   = this.add.text(550, 330, `      Height: ${((screenHeight * metersPerPixel) - currYPosition).toFixed(2)} meters`, { fontSize: '16px', fill: '#000000' });
-    timeElapsedText                 = this.add.text(550, 360, `        Time: ${totalTimeElapsed.toFixed(2)} seconds`, { fontSize: '16px', fill: '#000000' });
+    propertiesText                  = this.add.text(600, 330, `POSITIONAL DATA`, { fontSize: '24px', fill: '#000000' });
+    accelerationText                = this.add.text(550, 370, `Acceleration: ${-1 * currAcceleration.toFixed(2)} meters/second^2`, { fontSize: '16px', fill: '#000000' });
+    velocityText                    = this.add.text(550, 400, `    Velocity: ${-1 * currYVelocity.toFixed(2)} meters/second`, { fontSize: '16px', fill: '#000000' });
+    YPositionText                   = this.add.text(550, 430, `      Height: ${((screenHeight * metersPerPixel) - currYPosition).toFixed(2)} meters`, { fontSize: '16px', fill: '#000000' });
+    timeElapsedText                 = this.add.text(550, 460, `        Time: ${totalTimeElapsed.toFixed(2)} seconds`, { fontSize: '16px', fill: '#000000' });
 
-    objectConstantsText             = this.add.text(600, 390, `OBJECT CONSTANTS`, { fontSize: '24px', fill: '#000000' });
-    dragCoefficientText             = this.add.text(550, 430, `Drag Coefficient: ${dragCoefficient}`, { fontSize: '16px', fill: '#000000' });
-    surfaceAreaText                 = this.add.text(550, 460, `    Surface Area: ${surfaceArea} meters^2`, { fontSize: '16px', fill: '#000000' });
-    massText                        = this.add.text(550, 490, `            Mass: ${mass} kilograms`, { fontSize: '16px', fill: '#000000' });
+    objectConstantsText             = this.add.text(600, 510, `OBJECT CONSTANTS`, { fontSize: '24px', fill: '#000000' });
+    dragCoefficientText             = this.add.text(550, 550, `Drag Coefficient: ${dragCoefficient}`, { fontSize: '16px', fill: '#000000' });
+    surfaceAreaText                 = this.add.text(550, 580, `    Surface Area: ${surfaceArea} meters^2`, { fontSize: '16px', fill: '#000000' });
+    massText                        = this.add.text(550, 610, `            Mass: ${mass} kilograms`, { fontSize: '16px', fill: '#000000' });
 
-    planetConstantsText             = this.add.text(600, 520, `PLANET CONSTANTS`, { fontSize: '24px', fill: '#000000' });
-    gravitationalAccelerationText   = this.add.text(465, 560, `Gravitational Acceleration: ${gravitationalAcceleration} meters/second^2`, { fontSize: '16px', fill: '#000000' });
-    fluidDensityText                = this.add.text(465, 590, `       Atmospheric Density: ${fluidDensity} kilograms/meter^2`, { fontSize: '16px', fill: '#000000' });
+    planetConstantsText             = this.add.text(600, 660, `PLANET CONSTANTS`, { fontSize: '24px', fill: '#000000' });
+    gravitationalAccelerationText   = this.add.text(465, 700, `Gravitational Acceleration: ${gravitationalAcceleration} meters/second^2`, { fontSize: '16px', fill: '#000000' });
+    fluidDensityText                = this.add.text(465, 730, `       Atmospheric Density: ${fluidDensity} kilograms/meter^2`, { fontSize: '16px', fill: '#000000' });
+
+    gravitationalForceText          = this.add.text(465, 200, `Gravitational Force: ${gravitationalForce.toFixed(2)} newtons`, { fontSize: '16px', fill: '#FFFFFF' });
+    dragForceText                   = this.add.text(465, 230, `         Drag Force: ${dragForce.toFixed(2)} newtons`, { fontSize: '16px', fill: '#FFFFFF' });
 
     // background
     sky.setScale(2);
@@ -423,11 +436,16 @@ function update ()
                   Position = (m/b) * ln( cosh( ( t * sqrt(b*g/m) ) + arctanh( v(0) * sqrt(b/(m*g)) ) )  ) 
                              - y(0) 
                              - (m/b) * ln( cosh( arctanh( v(0) * sqrt(b/(m*g)) ) ) )
+            Force(gravity) = mg
+               Force(drag) = 1/2 * Cd * ρ * A * (v(t)^2) = b * (v(t)^2)
 
             */
-            currAcceleration = gravitationalAcceleration - ((dragConstantB * currYVelocity * currYVelocity) /mass);
-            currYVelocity    = Math.sqrt(mass * gravitationalAcceleration / dragConstantB) * Math.tanh( ( totalTimeElapsed * Math.sqrt(dragConstantB * gravitationalAcceleration / mass) ) + Math.atanh( initYVelocity * Math.sqrt(dragConstantB / (mass * gravitationalAcceleration)) ) );
-            currYPosition    = (mass/dragConstantB) * Math.log( Math.cosh( ( totalTimeElapsed * Math.sqrt((dragConstantB*gravitationalAcceleration)/mass) ) + Math.atanh( initYVelocity * Math.sqrt(dragConstantB/(mass*gravitationalAcceleration)) ) ) ) - initYPosition - ((mass/dragConstantB) * Math.log( Math.cosh( Math.atanh( initYVelocity * Math.sqrt(dragConstantB/(mass*gravitationalAcceleration)) ) ) ) )
+            currAcceleration    = gravitationalAcceleration - ((dragConstantB * currYVelocity * currYVelocity) /mass);
+            currYVelocity       = Math.sqrt(mass * gravitationalAcceleration / dragConstantB) * Math.tanh( ( totalTimeElapsed * Math.sqrt(dragConstantB * gravitationalAcceleration / mass) ) + Math.atanh( initYVelocity * Math.sqrt(dragConstantB / (mass * gravitationalAcceleration)) ) );
+            currYPosition       = (mass/dragConstantB) * Math.log( Math.cosh( ( totalTimeElapsed * Math.sqrt((dragConstantB*gravitationalAcceleration)/mass) ) + Math.atanh( initYVelocity * Math.sqrt(dragConstantB/(mass*gravitationalAcceleration)) ) ) ) - initYPosition - ((mass/dragConstantB) * Math.log( Math.cosh( Math.atanh( initYVelocity * Math.sqrt(dragConstantB/(mass*gravitationalAcceleration)) ) ) ) )
+            gravitationalForce  = gravitationalAcceleration * mass;
+            dragForce           = dragConstantB * currYVelocity * currYVelocity;
+
 
         } else {
             /* no air drag
@@ -436,9 +454,12 @@ function update ()
                   Velocity: v = v0 + gt 
                   Position: y = y0 + (v0 * t) + (g * t^2)/2
             */
-            currAcceleration = gravitationalAcceleration; // constant acceleration
-            currYVelocity    = initYVelocity + (gravitationalAcceleration * totalTimeElapsed);
-            currYPosition    = initYPosition + (initYVelocity * totalTimeElapsed) + (0.5 * gravitationalAcceleration * totalTimeElapsed * totalTimeElapsed);
+            currAcceleration    = gravitationalAcceleration; // constant acceleration
+            currYVelocity       = initYVelocity + (gravitationalAcceleration * totalTimeElapsed);
+            currYPosition       = initYPosition + (initYVelocity * totalTimeElapsed) + (0.5 * gravitationalAcceleration * totalTimeElapsed * totalTimeElapsed);
+            gravitationalForce  = gravitationalAcceleration * mass;
+            dragForce           = 0;
+
         }
         // set lastTimeCheck
         lastTimeCheck = currTime;
@@ -457,6 +478,8 @@ function update ()
     dragCoefficientText.setText(`Drag Coefficient: ${dragCoefficient.toFixed(2)}`);
     surfaceAreaText.setText(`    Surface Area: ${surfaceArea.toFixed(2)} meters^2`);
     massText.setText(`            Mass: ${mass.toFixed(2)} kilograms`);
+    gravitationalForceText.setText(`Gravitational Force: ${gravitationalForce.toFixed(2)} newtons`);
+    dragForceText.setText(`         Drag Force: ${dragForce.toFixed(2)} newtons`);
 }
 
 // toggle if sim is running
@@ -496,6 +519,9 @@ function startOver() {
     currYVelocity       = initYVelocity;
     currAcceleration    = initAcceleration;
     totalTimeElapsed    = 0;
+    gravitationalForce  = 0;
+    dragForce           = 0;
+
 
     // reset simRunning
     simRunning = false;
