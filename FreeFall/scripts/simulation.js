@@ -53,7 +53,11 @@ var dragConstantB;               // b: is (Cd * ρ * A)/2, i.e. the constants in
 var screenHeight        = 800;
 var screenWidth         = 1000;
 
-var initXPosition       = 150;
+var forceArrowOriginX   = 880;
+var forceArrowOriginY   = 230;
+var forceArrowMaxHeight = 80;
+
+var initXPosition       = 200;
 var initYPosition       = 0;
 var currYPosition;
 
@@ -75,6 +79,7 @@ var useAirDrag = false;
 // background
 var sky;
 var textBackground;
+var forceBackground;
 
 // HUD
 var propertiesText
@@ -90,7 +95,9 @@ var dragCoefficientText;
 var surfaceAreaText;
 var massText;
 var gravitationalForceText;
+var gravitationalForceArrow;
 var dragForceText;
+var dragForceArrow;
 
 
 var buttonPlayPauseDownload;
@@ -140,12 +147,14 @@ function preload ()
     // preload assets for the game
     this.load.image('sky', 'assets/sky.png');
     this.load.image('textBackground', 'assets/textBackground.png');
+    this.load.image('forceBackground', 'assets/forceBackground.png');
     this.load.spritesheet('buttonPlayPauseDownload', 'assets/buttonPlayPause.png', { frameWidth: 50, frameHeight: 50 });
     this.load.image('buttonRestart', 'assets/buttonRestart.png');
     this.load.spritesheet('buttonAirVacuum', 'assets/airVacuum.png', { frameWidth: 100, frameHeight: 100 });
     this.load.spritesheet('objectsChoice', 'assets/objectsChoice.png', { frameWidth: 100, frameHeight: 100 });
     this.load.spritesheet('object', 'assets/objects.png', { frameWidth: 150, frameHeight: 150 });
     this.load.spritesheet('planetsChoice', 'assets/planetsChoice.png', { frameWidth: 100, frameHeight: 100 });
+    this.load.image('arrow', 'assets/forceArrow.png');
 }
 
 function create ()
@@ -207,28 +216,29 @@ function create ()
     startOver();
 
     // Background
-    sky = this.add.image(500, 500, 'sky');
-    textBackground = this.add.image(710, 540, 'textBackground');
+    sky             = this.add.image(500, 500, 'sky');
+    textBackground  = this.add.image(710, 560, 'textBackground');
+    forceBackground = this.add.image(710, 225, 'forceBackground');
     
 
     // Text
-    propertiesText                  = this.add.text(600, 330, `POSITIONAL DATA`, { fontSize: '24px', fill: '#000000' });
-    accelerationText                = this.add.text(550, 370, `Acceleration: ${-1 * currAcceleration.toFixed(2)} meters/second^2`, { fontSize: '16px', fill: '#000000' });
-    velocityText                    = this.add.text(550, 400, `    Velocity: ${-1 * currYVelocity.toFixed(2)} meters/second`, { fontSize: '16px', fill: '#000000' });
-    YPositionText                   = this.add.text(550, 430, `      Height: ${((screenHeight * metersPerPixel) - currYPosition).toFixed(2)} meters`, { fontSize: '16px', fill: '#000000' });
-    timeElapsedText                 = this.add.text(550, 460, `        Time: ${totalTimeElapsed.toFixed(2)} seconds`, { fontSize: '16px', fill: '#000000' });
+    gravitationalForceText          = this.add.text(480, 235, `Gravitational Force: ${gravitationalForce.toFixed(2)} newtons`, { fontSize: '16px', fill: '#000000' });
+    dragForceText                   = this.add.text(480, 205, `         Drag Force: ${dragForce.toFixed(2)} newtons`, { fontSize: '16px', fill: '#000000' });
 
-    objectConstantsText             = this.add.text(600, 510, `OBJECT CONSTANTS`, { fontSize: '24px', fill: '#000000' });
-    dragCoefficientText             = this.add.text(550, 550, `Drag Coefficient: ${dragCoefficient}`, { fontSize: '16px', fill: '#000000' });
-    surfaceAreaText                 = this.add.text(550, 580, `    Surface Area: ${surfaceArea} meters^2`, { fontSize: '16px', fill: '#000000' });
-    massText                        = this.add.text(550, 610, `            Mass: ${mass} kilograms`, { fontSize: '16px', fill: '#000000' });
+    propertiesText                  = this.add.text(600, 350, `POSITIONAL DATA`, { fontSize: '24px', fill: '#000000' });
+    accelerationText                = this.add.text(550, 390, `Acceleration: ${-1 * currAcceleration.toFixed(2)} meters/second^2`, { fontSize: '16px', fill: '#000000' });
+    velocityText                    = this.add.text(550, 420, `    Velocity: ${-1 * currYVelocity.toFixed(2)} meters/second`, { fontSize: '16px', fill: '#000000' });
+    YPositionText                   = this.add.text(550, 450, `      Height: ${((screenHeight * metersPerPixel) - currYPosition).toFixed(2)} meters`, { fontSize: '16px', fill: '#000000' });
+    timeElapsedText                 = this.add.text(550, 480, `        Time: ${totalTimeElapsed.toFixed(2)} seconds`, { fontSize: '16px', fill: '#000000' });
 
-    planetConstantsText             = this.add.text(600, 660, `PLANET CONSTANTS`, { fontSize: '24px', fill: '#000000' });
-    gravitationalAccelerationText   = this.add.text(465, 700, `Gravitational Acceleration: ${gravitationalAcceleration} meters/second^2`, { fontSize: '16px', fill: '#000000' });
-    fluidDensityText                = this.add.text(465, 730, `       Atmospheric Density: ${fluidDensity} kilograms/meter^2`, { fontSize: '16px', fill: '#000000' });
+    objectConstantsText             = this.add.text(600, 530, `OBJECT CONSTANTS`, { fontSize: '24px', fill: '#000000' });
+    dragCoefficientText             = this.add.text(550, 570, `Drag Coefficient: ${dragCoefficient}`, { fontSize: '16px', fill: '#000000' });
+    surfaceAreaText                 = this.add.text(550, 600, `    Surface Area: ${surfaceArea} meters^2`, { fontSize: '16px', fill: '#000000' });
+    massText                        = this.add.text(550, 630, `            Mass: ${mass} kilograms`, { fontSize: '16px', fill: '#000000' });
 
-    gravitationalForceText          = this.add.text(465, 200, `Gravitational Force: ${gravitationalForce.toFixed(2)} newtons`, { fontSize: '16px', fill: '#FFFFFF' });
-    dragForceText                   = this.add.text(465, 230, `         Drag Force: ${dragForce.toFixed(2)} newtons`, { fontSize: '16px', fill: '#FFFFFF' });
+    planetConstantsText             = this.add.text(600, 680, `PLANET CONSTANTS`, { fontSize: '24px', fill: '#000000' });
+    gravitationalAccelerationText   = this.add.text(465, 720, `Gravitational Acceleration: ${gravitationalAcceleration} meters/second^2`, { fontSize: '16px', fill: '#000000' });
+    fluidDensityText                = this.add.text(465, 750, `       Atmospheric Density: ${fluidDensity} kilograms/meter^2`, { fontSize: '16px', fill: '#000000' });
 
     // background
     sky.setScale(2);
@@ -284,7 +294,7 @@ function create ()
         frames: [ { key: 'buttonAirVacuum', frame: 1 } ],
         frameRate: 0
     });
-    buttonAirVacuum = this.add.sprite(705, 125, 'buttonAirVacuum');
+    buttonAirVacuum = this.add.sprite(485, 65, 'buttonAirVacuum');
     buttonAirVacuum.anims.play('vacuum', true); // initialize to play
     buttonAirVacuum.setInteractive();
     // when clicked, update appearance and toggle simulation running
@@ -330,7 +340,7 @@ function create ()
     object = this.add.sprite(initXPosition, initYPosition, 'object');
     object.anims.play(currObject, true); 
 
-    // object selector
+    // ---------- objects selector ---------- //
     this.anims.create({
         key: 'sphereChoice',
         frames: [ { key: 'objectsChoice', frame: 0 } ],
@@ -351,7 +361,7 @@ function create ()
         frames: [ { key: 'objectsChoice', frame: 3 } ],
         frameRate: 0
     });
-    objectsChoice = this.add.sprite(820, 125, 'objectsChoice');
+    objectsChoice = this.add.sprite(600, 65, 'objectsChoice');
     objectsChoice.anims.play(`${currObject}Choice`, true); 
     objectsChoice.setInteractive();
     // when clicked, update appearance and toggle simulation running
@@ -370,7 +380,7 @@ function create ()
         
     });
 
-    // planet selector
+    // ---------- planet selector ---------- //
     this.anims.create({
         key: 'earth', 
         frames: [ { key: 'planetsChoice', frame: 0 } ],
@@ -396,7 +406,7 @@ function create ()
         frames: [ { key: 'planetsChoice', frame: 4 } ],
         frameRate: 0
     });
-    planetsChoice = this.add.sprite(935, 125, 'planetsChoice');
+    planetsChoice = this.add.sprite(715, 65, 'planetsChoice');
     planetsChoice.anims.play(currPlanet, true); 
     planetsChoice.setInteractive();
     // when clicked, update appearance and toggle simulation running
@@ -413,6 +423,17 @@ function create ()
         startOver();
         
     });
+
+    // ---------- force arrows ---------- //
+    gravitationalForceArrow = this.add.sprite(forceArrowOriginX, forceArrowOriginY, 'arrow');
+    gravitationalForceArrow.flipY = true;
+    gravitationalForceArrow.displayWidth = 15;
+    gravitationalForceArrow.displayHeight = 0;
+    gravitationalForceArrow.y = forceArrowOriginY + (gravitationalForceArrow.displayHeight)/2 + 2;
+    dragForceArrow = this.add.sprite(forceArrowOriginX, forceArrowOriginY, 'arrow');
+    dragForceArrow.displayWidth = 15;
+    dragForceArrow.displayHeight = 0;
+    dragForceArrow.y = forceArrowOriginY - (dragForceArrow.displayHeight)/2 - 2;
 
 }
 
@@ -480,6 +501,23 @@ function update ()
     massText.setText(`            Mass: ${mass.toFixed(2)} kilograms`);
     gravitationalForceText.setText(`Gravitational Force: ${gravitationalForce.toFixed(2)} newtons`);
     dragForceText.setText(`         Drag Force: ${dragForce.toFixed(2)} newtons`);
+
+    // update force arrows - gravitation is maxed out, if object is accelerating
+    if (currAcceleration != 0) {
+        gravitationalForceArrow.displayHeight = forceArrowMaxHeight;
+    } else {
+        gravitationalForceArrow.displayHeight = 0;
+    }
+    gravitationalForceArrow.y = forceArrowOriginY + (gravitationalForceArrow.displayHeight)/2 + 2;
+
+    // drag force arrow is porportional to gravitational
+    if (currYVelocity != 0) {
+        dragForceArrow.displayHeight = gravitationalForceArrow.displayHeight * dragForce / gravitationalForce;
+    } else {
+        dragForceArrow.displayHeight = 0;
+    }
+    dragForceArrow.y = forceArrowOriginY - (dragForceArrow.displayHeight)/2 - 2;
+
 }
 
 // toggle if sim is running
