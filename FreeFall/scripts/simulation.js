@@ -82,6 +82,7 @@ var textBackground;
 var forceBackground;
 
 // HUD
+var forcesText;
 var propertiesText
 var accelerationText;
 var velocityText;
@@ -222,8 +223,9 @@ function create ()
     
 
     // Text
-    gravitationalForceText          = this.add.text(480, 235, `Gravitational Force: ${gravitationalForce.toFixed(2)} newtons`, { fontSize: '16px', fill: '#000000' });
+    forcesText                      = this.add.text(660, 165, `FORCES`, { fontSize: '24px', fill: '#000000' });
     dragForceText                   = this.add.text(480, 205, `         Drag Force: ${dragForce.toFixed(2)} newtons`, { fontSize: '16px', fill: '#000000' });
+    gravitationalForceText          = this.add.text(480, 235, `Gravitational Force: ${gravitationalForce.toFixed(2)} newtons`, { fontSize: '16px', fill: '#000000' });
 
     propertiesText                  = this.add.text(600, 350, `POSITIONAL DATA`, { fontSize: '24px', fill: '#000000' });
     accelerationText                = this.add.text(550, 390, `Acceleration: ${-1 * currAcceleration.toFixed(2)} meters/second^2`, { fontSize: '16px', fill: '#000000' });
