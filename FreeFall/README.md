@@ -129,3 +129,5 @@ Venus
 the sun
 - gravitationalAcceleration: 275
 - fluidDensity: 0.0001
+
+[Planet images by brgfx]("https://www.freepik.com/free-vector/planets-galaxy_4228290.htm#query=solar%20system%20planets&position=14&from_view=keyword&track=ais") on Freepik

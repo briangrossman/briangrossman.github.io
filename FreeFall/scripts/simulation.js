@@ -1,13 +1,6 @@
 /* 
     TODO:
-    - ability to swap objects (Change name from ball)
-       - Options:
-          - sphere
-          - basketball
-          - baloon
-          - skydiver
-          - ??
-       - Display values   
+    - Choose planet
 
     - Fix pixels scale
        - And how it interacts with gravity
@@ -19,16 +12,13 @@
     - Build out different model
        - Allow switching between models
        - Make sure you believe their working
-
-    - Build out skydiver opening chute
+          - Air model doesn't behave when you start at a point other than 0
 
     - Force graphic
        - Shows force arrows
        - shows image of object, shaking a little
 
-    - Choose planet
-
-    - Updated parachuter?
+    - Build out skydiver opening chute
 
     - What's the deal with boyancy?
        - Is this helpful: https://www.longdom.org/open-access/buoyancy-explains-terminal-velocity-in-skydiving-15928.html ? 
@@ -101,6 +91,7 @@ var buttonPlayPauseDownload;
 var buttonRestart;
 var objectsChoice;
 var object;
+var planetsChoice;
 
 
 // Time Vars (in seconds)
@@ -147,6 +138,7 @@ function preload ()
     this.load.spritesheet('buttonAirVacuum', 'assets/airVacuum.png', { frameWidth: 100, frameHeight: 100 });
     this.load.spritesheet('objectsChoice', 'assets/objectsChoice.png', { frameWidth: 100, frameHeight: 100 });
     this.load.spritesheet('object', 'assets/objects.png', { frameWidth: 150, frameHeight: 150 });
+    this.load.spritesheet('planetsChoice', 'assets/planetsChoice.png', { frameWidth: 100, frameHeight: 100 });
 }
 
 function create ()
@@ -281,7 +273,7 @@ function create ()
         frames: [ { key: 'buttonAirVacuum', frame: 1 } ],
         frameRate: 0
     });
-    buttonAirVacuum = this.add.sprite(820, 125, 'buttonAirVacuum');
+    buttonAirVacuum = this.add.sprite(705, 125, 'buttonAirVacuum');
     buttonAirVacuum.anims.play('vacuum', true); // initialize to play
     buttonAirVacuum.setInteractive();
     // when clicked, update appearance and toggle simulation running
@@ -348,7 +340,7 @@ function create ()
         frames: [ { key: 'objectsChoice', frame: 3 } ],
         frameRate: 0
     });
-    objectsChoice = this.add.sprite(935, 125, 'objectsChoice');
+    objectsChoice = this.add.sprite(820, 125, 'objectsChoice');
     objectsChoice.anims.play(`${currObject}Choice`, true); 
     objectsChoice.setInteractive();
     // when clicked, update appearance and toggle simulation running
@@ -367,7 +359,49 @@ function create ()
         
     });
 
+    // planet selector
+    this.anims.create({
+        key: 'earth', 
+        frames: [ { key: 'planetsChoice', frame: 0 } ],
+        frameRate: 0
+    });
+    this.anims.create({
+        key: 'moon',
+        frames: [ { key: 'planetsChoice', frame: 1 } ],
+        frameRate: 0
+    });
+    this.anims.create({
+        key: 'mars',
+        frames: [ { key: 'planetsChoice', frame: 2 } ],
+        frameRate: 0
+    });
+    this.anims.create({
+        key: 'venus',
+        frames: [ { key: 'planetsChoice', frame: 3 } ],
+        frameRate: 0
+    });
+    this.anims.create({
+        key: 'sun',
+        frames: [ { key: 'planetsChoice', frame: 4 } ],
+        frameRate: 0
+    });
+    planetsChoice = this.add.sprite(935, 125, 'planetsChoice');
+    planetsChoice.anims.play(currPlanet, true); 
+    planetsChoice.setInteractive();
+    // when clicked, update appearance and toggle simulation running
+    planetsChoice.on('pointerdown', () => {
 
+        // set currPlanet to be the next item in the dictionary
+        currPlanet = getNextDictElement(planetsDict, currPlanet);
+
+        // update frame for planetsChoice
+        planetsChoice.anims.play(currPlanet, true);
+
+        // reset play button
+        buttonPlayPauseDownload.anims.play('play', true);
+        startOver();
+        
+    });
 
 }
 
@@ -380,7 +414,8 @@ function update ()
         totalTimeElapsed += (currTime - lastTimeCheck);
         
         // get acceleration, velocity, and y position 
-        if (useAirDrag) {
+        // moon has no atmosphere and therefore would behave like vacuum
+        if (useAirDrag && (currPlanet != 'moon')) {
             /* air drag
 
              b is (Cd * ρ * A)/2, i.e. the constants in the drag force. 
