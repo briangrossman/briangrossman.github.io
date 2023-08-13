@@ -13,6 +13,9 @@
        - And how it interacts with gravity
        - Check implemented model: https://en.wikipedia.org/wiki/Free_fall#:~:text=With%20air%20resistance%20acting%20on,mph)%20for%20a%20human%20skydiver.
 
+    - Forces
+       - Show forces
+
     - Build out different model
        - Allow switching between models
        - Make sure you believe their working
@@ -75,9 +78,8 @@ var currAcceleration;
 var metersPerPixel = 1; // scale size
 var useAirDrag = false;
 
-// objects
+// background
 var sky;
-var ball; // adf
 
 
 // HUD
@@ -98,6 +100,7 @@ var massText;
 var buttonPlayPauseDownload;
 var buttonRestart;
 var objectsChoice;
+var object;
 
 
 // Time Vars (in seconds)
@@ -139,11 +142,11 @@ function preload ()
 {
     // preload assets for the game
     this.load.image('sky', 'assets/sky.png');
-    this.load.image('ball', 'assets/skydiver.png'); // asdf
     this.load.spritesheet('buttonPlayPauseDownload', 'assets/buttonPlayPause.png', { frameWidth: 50, frameHeight: 50 });
     this.load.image('buttonRestart', 'assets/buttonRestart.png');
     this.load.spritesheet('buttonAirVacuum', 'assets/airVacuum.png', { frameWidth: 100, frameHeight: 100 });
     this.load.spritesheet('objectsChoice', 'assets/objectsChoice.png', { frameWidth: 100, frameHeight: 100 });
+    this.load.spritesheet('object', 'assets/objects.png', { frameWidth: 150, frameHeight: 150 });
 }
 
 function create ()
@@ -209,10 +212,6 @@ function create ()
 
     // Background
     sky = this.add.image(500, 500, 'sky');
-
-    // object
-    ball = this.add.sprite(initXPosition, initYPosition, 'ball'); // asdf
-    ball.setScale(.04); // asdf
 
     // Text
     propertiesText                  = this.add.text(400, 230, `POSITIONAL DATA`, { fontSize: '24px', fill: '#FFF' });
@@ -304,29 +303,53 @@ function create ()
         
     });
 
-    // ---------- objects choice button ---------- //
+    // ---------- objects and objects choice button ---------- //
     this.anims.create({
         key: 'sphere',
-        frames: [ { key: 'objectsChoice', frame: 0 } ],
+        frames: [ { key: 'object', frame: 0 } ],
         frameRate: 0
     });
     this.anims.create({
         key: 'basketball',
-        frames: [ { key: 'objectsChoice', frame: 1 } ],
+        frames: [ { key: 'object', frame: 1 } ],
         frameRate: 0
     });
     this.anims.create({
         key: 'balloon',
-        frames: [ { key: 'objectsChoice', frame: 2 } ],
+        frames: [ { key: 'object', frame: 2 } ],
         frameRate: 0
     });
     this.anims.create({
         key: 'parachuter',
+        frames: [ { key: 'object', frame: 3 } ],
+        frameRate: 0
+    });
+    object = this.add.sprite(initXPosition, initYPosition, 'object');
+    object.anims.play(currObject, true); 
+
+    // object selector
+    this.anims.create({
+        key: 'sphereChoice',
+        frames: [ { key: 'objectsChoice', frame: 0 } ],
+        frameRate: 0
+    });
+    this.anims.create({
+        key: 'basketballChoice',
+        frames: [ { key: 'objectsChoice', frame: 1 } ],
+        frameRate: 0
+    });
+    this.anims.create({
+        key: 'balloonChoice',
+        frames: [ { key: 'objectsChoice', frame: 2 } ],
+        frameRate: 0
+    });
+    this.anims.create({
+        key: 'parachuterChoice',
         frames: [ { key: 'objectsChoice', frame: 3 } ],
         frameRate: 0
     });
     objectsChoice = this.add.sprite(935, 125, 'objectsChoice');
-    objectsChoice.anims.play('sphere', true); 
+    objectsChoice.anims.play(`${currObject}Choice`, true); 
     objectsChoice.setInteractive();
     // when clicked, update appearance and toggle simulation running
     objectsChoice.on('pointerdown', () => {
@@ -334,8 +357,9 @@ function create ()
         // set currObject to be the next item in the dictionary
         currObject = getNextDictElement(objectsDict, currObject);
 
-        // update objectsChoice
-        objectsChoice.anims.play(currObject, true);
+        // update frame for object and objectsChoice
+        objectsChoice.anims.play(`${currObject}Choice`, true);
+        object.anims.play(currObject, true);
 
         // reset play button
         buttonPlayPauseDownload.anims.play('play', true);
@@ -387,8 +411,8 @@ function update ()
         lastTimeCheck = currTime;
     } 
 
-    // update ball position
-    ball.y = currYPosition; // asdf
+    // update object position
+    object.y = currYPosition;
 
     // update text fields
     accelerationText.setText(`Acceleration: ${-1 * currAcceleration.toFixed(2)} meters/second^2`);  // negate due to inverted y-axis

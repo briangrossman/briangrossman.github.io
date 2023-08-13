@@ -79,3 +79,53 @@ You can solve for the terminal velocity when the acceleration is zero.
 v^2 = (2mg)/(Cd * ρ * A)
   v = sqrt((2mg)/(Cd * ρ * A))
 ```
+
+###
+
+# Objects and Planets
+
+In an effort to demonstrate how different objects fall in different gravitational environments, I added the ability to change the object and the planet for the simulation. The mathematical model is robust enough to simply update some of the constants when the objects and planets are changed. 
+
+Changing the object changes the drag coefficient, surface area, and mass. 
+
+sphere
+- dragCoefficient: 0.5
+- surfaceArea: 2
+- mass: 1
+
+basketball
+- dragCoefficient: 0.5
+- surfaceArea: Math.PI * .119 * .119
+- mass: .68
+
+balloon
+- dragCoefficient: 0.5
+- surfaceArea: Math.PI * .119 * .119
+- mass: .04
+
+parachuter
+- dragCoefficient: 1
+- surfaceArea: 1.06 
+- mass: 90
+
+Changing the planet/moon changes the gravitational acceleration and atmospheric density.
+
+Earth
+- gravitationalAcceleration: 9.81
+- fluidDensity: 1.23
+
+the moon
+- gravitationalAcceleration: 1.6
+- fluidDensity: 0
+
+Mars
+- gravitationalAcceleration: 3.7
+- fluidDensity: 0.020
+
+Venus
+- gravitationalAcceleration: 8.87
+- fluidDensity: 65
+
+the sun
+- gravitationalAcceleration: 275
+- fluidDensity: 0.0001
