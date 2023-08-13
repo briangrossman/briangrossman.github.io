@@ -91,7 +91,7 @@ Changing the object changes the drag coefficient, surface area, and mass.
 sphere
 - dragCoefficient: 0.5
 - surfaceArea: 2
-- mass: 1
+- mass: 40
 
 basketball
 - dragCoefficient: 0.5

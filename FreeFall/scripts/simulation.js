@@ -1,7 +1,5 @@
 /* 
     TODO:
-    - Choose planet
-
     - Fix pixels scale
        - And how it interacts with gravity
        - Check implemented model: https://en.wikipedia.org/wiki/Free_fall#:~:text=With%20air%20resistance%20acting%20on,mph)%20for%20a%20human%20skydiver.
@@ -11,6 +9,8 @@
 
     - Build out different model
        - Allow switching between models
+
+    - Check existing model
        - Make sure you believe their working
           - Air model doesn't behave when you start at a point other than 0
 
@@ -53,7 +53,7 @@ var dragConstantB;               // b: is (Cd * ρ * A)/2, i.e. the constants in
 var screenHeight        = 800;
 var screenWidth         = 1000;
 
-var initXPosition       = 100;
+var initXPosition       = 150;
 var initYPosition       = 0;
 var currYPosition;
 
@@ -70,7 +70,7 @@ var useAirDrag = false;
 
 // background
 var sky;
-
+var textBackground;
 
 // HUD
 var propertiesText
@@ -133,6 +133,7 @@ function preload ()
 {
     // preload assets for the game
     this.load.image('sky', 'assets/sky.png');
+    this.load.image('textBackground', 'assets/textBackground.png');
     this.load.spritesheet('buttonPlayPauseDownload', 'assets/buttonPlayPause.png', { frameWidth: 50, frameHeight: 50 });
     this.load.image('buttonRestart', 'assets/buttonRestart.png');
     this.load.spritesheet('buttonAirVacuum', 'assets/airVacuum.png', { frameWidth: 100, frameHeight: 100 });
@@ -148,7 +149,7 @@ function create ()
         "sphere": {
             "dragCoefficient": 0.5,
             "surfaceArea": 2, 
-            "mass": 1,
+            "mass": 40,
         },
         "basketball": {
             "dragCoefficient": 0.5,
@@ -204,20 +205,24 @@ function create ()
 
     // Background
     sky = this.add.image(500, 500, 'sky');
+    textBackground = this.add.image(710, 410, 'textBackground');
+    
 
     // Text
-    propertiesText                  = this.add.text(400, 230, `POSITIONAL DATA`, { fontSize: '24px', fill: '#FFF' });
-    accelerationText                = this.add.text(400, 270, `Acceleration: ${-1 * currAcceleration.toFixed(2)} meters/second^2`, { fontSize: '16px', fill: '#FFF' });
-    velocityText                    = this.add.text(400, 300, `    Velocity: ${-1 * currYVelocity.toFixed(2)} meters/second`, { fontSize: '16px', fill: '#FFF' });
-    YPositionText                   = this.add.text(400, 330, `      Height: ${((screenHeight * metersPerPixel) - currYPosition).toFixed(2)} meters`, { fontSize: '16px', fill: '#FFF' });
-    timeElapsedText                 = this.add.text(400, 360, `        Time: ${totalTimeElapsed.toFixed(2)} seconds`, { fontSize: '16px', fill: '#FFF' });
-    planetConstantsText             = this.add.text(400, 390, `PLANET CONSTANTS`, { fontSize: '24px', fill: '#FFF' });
-    gravitationalAccelerationText   = this.add.text(400, 430, `Gravitational Acceleration: ${gravitationalAcceleration} meters/second^2`, { fontSize: '16px', fill: '#FFF' });
-    fluidDensityText                = this.add.text(400, 460, `       Atmospheric Density: ${fluidDensity} kilograms/meter^2`, { fontSize: '16px', fill: '#FFF' });
-    objectConstantsText             = this.add.text(400, 490, `OBJECT CONSTANTS`, { fontSize: '24px', fill: '#FFF' });
-    dragCoefficientText             = this.add.text(400, 520, `Drag Coefficient: ${dragCoefficient}`, { fontSize: '16px', fill: '#FFF' });
-    surfaceAreaText                 = this.add.text(400, 550, `    Surface Area: ${surfaceArea} meters^2`, { fontSize: '16px', fill: '#FFF' });
-    massText                        = this.add.text(400, 580, `            Mass: ${mass} kilograms`, { fontSize: '16px', fill: '#FFF' });
+    propertiesText                  = this.add.text(600, 230, `POSITIONAL DATA`, { fontSize: '24px', fill: '#000000' });
+    accelerationText                = this.add.text(550, 270, `Acceleration: ${-1 * currAcceleration.toFixed(2)} meters/second^2`, { fontSize: '16px', fill: '#000000' });
+    velocityText                    = this.add.text(550, 300, `    Velocity: ${-1 * currYVelocity.toFixed(2)} meters/second`, { fontSize: '16px', fill: '#000000' });
+    YPositionText                   = this.add.text(550, 330, `      Height: ${((screenHeight * metersPerPixel) - currYPosition).toFixed(2)} meters`, { fontSize: '16px', fill: '#000000' });
+    timeElapsedText                 = this.add.text(550, 360, `        Time: ${totalTimeElapsed.toFixed(2)} seconds`, { fontSize: '16px', fill: '#000000' });
+
+    objectConstantsText             = this.add.text(600, 390, `OBJECT CONSTANTS`, { fontSize: '24px', fill: '#000000' });
+    dragCoefficientText             = this.add.text(550, 430, `Drag Coefficient: ${dragCoefficient}`, { fontSize: '16px', fill: '#000000' });
+    surfaceAreaText                 = this.add.text(550, 460, `    Surface Area: ${surfaceArea} meters^2`, { fontSize: '16px', fill: '#000000' });
+    massText                        = this.add.text(550, 490, `            Mass: ${mass} kilograms`, { fontSize: '16px', fill: '#000000' });
+
+    planetConstantsText             = this.add.text(600, 520, `PLANET CONSTANTS`, { fontSize: '24px', fill: '#000000' });
+    gravitationalAccelerationText   = this.add.text(465, 560, `Gravitational Acceleration: ${gravitationalAcceleration} meters/second^2`, { fontSize: '16px', fill: '#000000' });
+    fluidDensityText                = this.add.text(465, 590, `       Atmospheric Density: ${fluidDensity} kilograms/meter^2`, { fontSize: '16px', fill: '#000000' });
 
     // background
     sky.setScale(2);
