@@ -1,9 +1,5 @@
 /* 
     TODO:
-    - Fix pixels scale
-       - And how it interacts with gravity
-       - Check implemented model: https://en.wikipedia.org/wiki/Free_fall#:~:text=With%20air%20resistance%20acting%20on,mph)%20for%20a%20human%20skydiver.
-
     - Forces
        - Show forces
 
@@ -199,9 +195,6 @@ function create ()
     
     // initialize the game
     startOver();
-
-    // update based on spacial scale
-    // gravitationalAcceleration = gravitationalAcceleration / metersPerPixel;
 
     // Background
     sky = this.add.image(500, 500, 'sky');
@@ -452,7 +445,7 @@ function update ()
     } 
 
     // update object position
-    object.y = currYPosition;
+    object.y = currYPosition / metersPerPixel;
 
     // update text fields
     accelerationText.setText(`Acceleration: ${-1 * currAcceleration.toFixed(2)} meters/second^2`);  // negate due to inverted y-axis
