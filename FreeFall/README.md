@@ -44,8 +44,8 @@ Of note: the assessment references `buoyancy`. I found a couple of articles that
 
 ```
 Acceleration: a = -g
-    Velocity: v = v0 - gt 
-    Position: y = y0 - (v0 * t) - (g * t^2)/2
+    Velocity: v = v(0) - gt 
+    Position: y = y(0) - (v(0) * t) - (g * t^2)/2
 ```
 
 ## Movement with air
