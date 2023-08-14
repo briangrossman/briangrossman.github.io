@@ -117,30 +117,30 @@ Changing the object changes the drag coefficient, surface area, and mass.
 
 sphere
 ```
-dragCoefficient: 0.5
-surfaceArea: 2
-mass: 40
+dragCoefficient (Cd): 0.5
+surfaceArea (A): 2
+mass (m): 40
 ```
 
 basketball
 ```
-dragCoefficient: 0.5
-surfaceArea: Math.PI * .119 * .119
-mass: .68
+dragCoefficient (Cd): 0.5
+surfaceArea (A): Math.PI * .119 * .119
+mass (m): .68
 ```
 
 balloon
 ```
-dragCoefficient: 0.5
-surfaceArea: Math.PI * .119 * .119
-mass: .04
+dragCoefficient (Cd): 0.5
+surfaceArea (A): Math.PI * .119 * .119
+mass (m): .04
 ```
 
 parachuter
 ```
-dragCoefficient: 1
-surfaceArea: 1.06 
-mass: 90
+dragCoefficient (Cd): 1
+surfaceArea (A): 1.06 
+mass (m): 90
 ```
 
 ## Planets
@@ -148,32 +148,32 @@ Changing the planet/moon changes the gravitational acceleration and atmospheric 
 
 Earth
 ```
-gravitationalAcceleration: 9.81
-fluidDensity: 1.23
+gravitationalAcceleration (g): 9.81
+fluidDensity (ρ): 1.23
 ```
 
 the moon
 ```
-gravitationalAcceleration: 1.6
-fluidDensity: 0
+gravitationalAcceleration (g): 1.6
+fluidDensity (ρ): 0
 ```
 
 Mars
 ```
-gravitationalAcceleration: 3.7
-fluidDensity: 0.020
+gravitationalAcceleration (g): 3.7
+fluidDensity (ρ): 0.020
 ```
 
 Venus
 ```
-gravitationalAcceleration: 8.87
-fluidDensity: 65
+gravitationalAcceleration (g): 8.87
+fluidDensity (ρ): 65
 ```
 
 the sun
 ```
-gravitationalAcceleration: 275
-fluidDensity: 0.0001
+gravitationalAcceleration (g): 275
+fluidDensity (ρ): 0.0001
 ```
 
 [Planet images by brgfx]("https://www.freepik.com/free-vector/planets-galaxy_4228290.htm#query=solar%20system%20planets&position=14&from_view=keyword&track=ais") on Freepik
