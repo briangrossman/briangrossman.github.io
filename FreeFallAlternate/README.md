@@ -36,7 +36,7 @@ This approach does a fairly good job estimating.
 
 The case where there's air ends up being more complicated, specifically because acceleration and velocity are intertwined. Unlike the vacuum case, it's not trivial to get the new acceleration because it's dependent on the new velocity, which, in turn, is dependent on the new acceleration. Fortunately, I was able to devise a method of estimating that seems to do a decent job taking things into account. 
 
-The first thing I do, is calculate a v(new) using a(curr). This is similar to using the left rule of the Reimann sum. It is likely a slight underestimate for the acceleration.
+The first thing I do, is calculate a v(new) using a(curr). It is slightly less accurate than the other methods, but it should be fairly close. 
 
 ```
 v(new) = v(curr) + (a(curr) * dt)
