@@ -82,7 +82,7 @@ This article: https://philosophicalmath.wordpress.com/2017/10/21/terminal-veloci
 ```
 Let b = (Cd * ρ * A)/2 - i.e. the constants in the drag force. 
 
-   a = ((b * v^2)/m) - g
+a(t) = ((b * v^2)/m) - g
 v(t) = sqrt(m*g/b) * tanh( ( t * sqrt(b*g/m) ) + arctanh( v(0) * sqrt(b/(m*g)) ) )
 y(t) = (m/b) * ln( cosh( ( t * sqrt(b*g/m) ) + arctanh( v(0) * sqrt(b/(m*g)) ) )  ) 
        - y(0) 
