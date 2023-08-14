@@ -35,7 +35,7 @@ Users can do the following:
 
 # The Model
 
-An ideal solution would be to find equations for acceleration, velocity, and position as a function of time. With this solution, you can track everything you need to know about an object simply by knowing the time that is has been falling. The math for the vacuum case, is relatively straight forward, the the math for the system with air resistance proves to be rather complex. I initially did some research (videos, papers, and AP Physics lessons) and found [someone who had managed to create equations](https://philosophicalmath.wordpress.com/2017/10/21/terminal-velocity-derivation/) for acceleration, velocity, and position (in the y direction) with air resistance.
+An ideal solution would be to find equations for acceleration, velocity, and position as a function of time. With this solution, you can track everything you need to know about an object simply by knowing the time that is has been falling. The math for the vacuum case, is relatively straight forward, but the the math for the system with air resistance proves to be rather complex. I initially did some research (videos, papers, and AP Physics lessons) and found [someone who had managed to create equations](https://philosophicalmath.wordpress.com/2017/10/21/terminal-velocity-derivation/) for acceleration, velocity, and position (in the y direction) with air resistance.
 
 Of note: the assessment references `buoyancy`. I found a couple of articles that referenced `buoyancy` in falling objects ([example](https://www.longdom.org/open-access/buoyancy-explains-terminal-velocity-in-skydiving-15928.html)), but most of the models just dealt with gravitation and drag forces. Hopefully I didn't miss something in the model!
 
