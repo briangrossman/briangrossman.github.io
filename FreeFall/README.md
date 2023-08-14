@@ -24,8 +24,8 @@ Users can do the following:
 - **Play / Pause button**: Click the Play / Pause button to start / pause the simulation
 - **Restart button**: Click the restart button to restart the simulation
 - **Vacuum / Air button**: Toggle between a simulation with air and in a vacuum. Note that this restarts the simulation.
-- **Object button**: Choose the object you want to use for the simulation
-- **Planet button**: Choose the planet you want to use for the simulation
+- **Object button**: Choose the object you want to use for the simulation. Note that this restarts the simulation.
+- **Planet button**: Choose the planet you want to use for the simulation. Note that this restarts the simulation.
 - **Object**: The object animates as the simulation plays
 - **Forces panel**: View the magnitudes and vectors for the force(s) acting on the object
 - **Data panel**: View positional data and constants for the simulation
@@ -180,6 +180,9 @@ fluidDensity: 0.0001
 
 
 # Future Plans / Notes
+
+## Technology
+This simulation uses [Phaser](https://phaser.io/). I consider Phaser a decent option for building out HTML interactives. 
 
 ## Alternate Model
 This model uses complex equations to calculate acceleration, velocity, and position over time. This solution is great for ensuring that values should be accurate and limits the possibility of compounded inaccuracies in the data. 
