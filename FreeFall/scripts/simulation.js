@@ -1,26 +1,22 @@
 /* 
-    TODO:
-    - Forces
-       - Show forces
-
-    - Force graphic
-       - Shows force arrows
-       - shows image of object, shaking a little
-
-    - Build out different model
-       - Allow switching between models
-
+    Future Plans:
+    - Build out with a different model (iterative summative integration)
+    - Allow ability to set the scale
+ 
     - Check existing model
-       - Make sure you believe their working
-          - Air model doesn't behave when you start at a point other than 0
-    - Check everything!
+    - Clean up and write up in Readme
+
+    ---------------------------
 
     - What's the deal with boyancy?
        - Is this helpful: https://www.longdom.org/open-access/buoyancy-explains-terminal-velocity-in-skydiving-15928.html ? 
 
+
     - maybe create an interface for the scale?
 
     - Build out skydiver opening chute
+
+
 
 */
 
@@ -28,6 +24,7 @@
   NOTES
 
   In phaser, the top of the screen is y == 0
+  Y values are therefor inverted
 */
 
 
@@ -50,7 +47,7 @@ var mass;                        // m: kg
 var dragConstantB;               // b: is (Cd * ρ * A)/2, i.e. the constants in the drag force. 
 
 // Initial values
-var screenHeight        = 800;
+var screenHeightPixels  = 800;
 var screenWidth         = 1000;
 
 var forceArrowOriginX   = 880;
@@ -58,7 +55,7 @@ var forceArrowOriginY   = 230;
 var forceArrowMaxHeight = 80;
 
 var initXPosition       = 200;
-var initYPosition       = 0;
+var initYPosition       = 100;
 var currYPosition;
 
 var initYVelocity       = 0;
@@ -72,8 +69,8 @@ var dragForce;
 
 
 // Settings
-var startingHeight = 1000;
-var metersPerPixel = startingHeight/800; 
+var topOfScreenHeight = 1100;
+var metersPerPixel = topOfScreenHeight/screenHeightPixels; 
 var useAirDrag = false;
 
 // background
@@ -119,7 +116,7 @@ var simRunning = false;
 var config = {
     type: Phaser.AUTO,
     width: screenWidth,
-    height: screenHeight,
+    height: screenHeightPixels,
     scene: {
         preload: preload,
         create: create,
@@ -230,7 +227,7 @@ function create ()
     propertiesText                  = this.add.text(600, 350, `POSITIONAL DATA`, { fontSize: '24px', fill: '#000000' });
     accelerationText                = this.add.text(550, 390, `Acceleration: ${-1 * currAcceleration.toFixed(2)} meters/second^2`, { fontSize: '16px', fill: '#000000' });
     velocityText                    = this.add.text(550, 420, `    Velocity: ${-1 * currYVelocity.toFixed(2)} meters/second`, { fontSize: '16px', fill: '#000000' });
-    YPositionText                   = this.add.text(550, 450, `      Height: ${((screenHeight * metersPerPixel) - currYPosition).toFixed(2)} meters`, { fontSize: '16px', fill: '#000000' });
+    YPositionText                   = this.add.text(550, 450, `      Height: ${((screenHeightPixels * metersPerPixel) - currYPosition).toFixed(2)} meters`, { fontSize: '16px', fill: '#000000' });
     timeElapsedText                 = this.add.text(550, 480, `        Time: ${totalTimeElapsed.toFixed(2)} seconds`, { fontSize: '16px', fill: '#000000' });
 
     objectConstantsText             = this.add.text(600, 530, `OBJECT CONSTANTS`, { fontSize: '24px', fill: '#000000' });
@@ -339,7 +336,7 @@ function create ()
         frames: [ { key: 'object', frame: 3 } ],
         frameRate: 0
     });
-    object = this.add.sprite(initXPosition, initYPosition, 'object');
+    object = this.add.sprite(initXPosition, initYPosition / metersPerPixel, 'object');
     object.anims.play(currObject, true); 
 
     // ---------- objects selector ---------- //
@@ -465,7 +462,7 @@ function update ()
             */
             currAcceleration    = gravitationalAcceleration - ((dragConstantB * currYVelocity * currYVelocity) /mass);
             currYVelocity       = Math.sqrt(mass * gravitationalAcceleration / dragConstantB) * Math.tanh( ( totalTimeElapsed * Math.sqrt(dragConstantB * gravitationalAcceleration / mass) ) + Math.atanh( initYVelocity * Math.sqrt(dragConstantB / (mass * gravitationalAcceleration)) ) );
-            currYPosition       = (mass/dragConstantB) * Math.log( Math.cosh( ( totalTimeElapsed * Math.sqrt((dragConstantB*gravitationalAcceleration)/mass) ) + Math.atanh( initYVelocity * Math.sqrt(dragConstantB/(mass*gravitationalAcceleration)) ) ) ) - initYPosition - ((mass/dragConstantB) * Math.log( Math.cosh( Math.atanh( initYVelocity * Math.sqrt(dragConstantB/(mass*gravitationalAcceleration)) ) ) ) )
+            currYPosition       = (mass/dragConstantB) * Math.log( Math.cosh( ( totalTimeElapsed * Math.sqrt((dragConstantB*gravitationalAcceleration)/mass) ) + Math.atanh( initYVelocity * Math.sqrt(dragConstantB/(mass*gravitationalAcceleration)) ) ) ) + initYPosition - ((mass/dragConstantB) * Math.log( Math.cosh( Math.atanh( initYVelocity * Math.sqrt(dragConstantB/(mass*gravitationalAcceleration)) ) ) ) )
             gravitationalForce  = gravitationalAcceleration * mass;
             dragForce           = dragConstantB * currYVelocity * currYVelocity;
 
@@ -494,7 +491,7 @@ function update ()
     // update text fields
     accelerationText.setText(`Acceleration: ${-1 * currAcceleration.toFixed(2)} meters/second^2`);  // negate due to inverted y-axis
     velocityText.setText(`    Velocity: ${-1 * currYVelocity.toFixed(2)} meters/second`);           // negate due to inverted y-axis
-    YPositionText.setText(`      Height: ${((screenHeight * metersPerPixel) - currYPosition).toFixed(2)} meters`);     // subtract from screenHeigh to get height
+    YPositionText.setText(`      Height: ${((screenHeightPixels * metersPerPixel) - currYPosition).toFixed(2)} meters`);     // subtract from screenHeigh to get height
     timeElapsedText.setText(`        Time: ${totalTimeElapsed.toFixed(2)} seconds`);
     gravitationalAccelerationText.setText(`Gravitational Acceleration: ${gravitationalAcceleration.toFixed(2)} meters/second^2`);
     fluidDensityText.setText(`       Atmospheric Density: ${fluidDensity.toFixed(2)} kilograms/meter^2`);
