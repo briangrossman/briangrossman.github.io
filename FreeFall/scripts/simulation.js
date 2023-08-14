@@ -1,26 +1,4 @@
 /* 
-    Future Plans:
-    - Build out with a different model (iterative summative integration)
-    - Allow ability to set the scale
- 
-    - Check existing model
-    - Clean up and write up in Readme
-
-    ---------------------------
-
-    - What's the deal with boyancy?
-       - Is this helpful: https://www.longdom.org/open-access/buoyancy-explains-terminal-velocity-in-skydiving-15928.html ? 
-
-
-    - maybe create an interface for the scale?
-
-    - Build out skydiver opening chute
-
-
-
-*/
-
-/* 
   NOTES
 
   In phaser, the top of the screen is y == 0
@@ -48,7 +26,7 @@ var dragConstantB;               // b: is (Cd * ρ * A)/2, i.e. the constants in
 
 // Initial values
 var screenHeightPixels  = 800;
-var screenWidth         = 1000;
+var screenWidthPixels   = 1000;
 
 var forceArrowOriginX   = 880;
 var forceArrowOriginY   = 230;
@@ -75,6 +53,7 @@ var useAirDrag = false;
 
 // background
 var sky;
+var ground;
 var textBackground;
 var forceBackground;
 
@@ -109,13 +88,14 @@ var planetsChoice;
 var lastTimeCheck;
 var totalTimeElapsed = 0;
 var simRunning = false; 
+var simComplete = false;
 
 
 
 // config Phaser
 var config = {
     type: Phaser.AUTO,
-    width: screenWidth,
+    width: screenWidthPixels,
     height: screenHeightPixels,
     scene: {
         preload: preload,
@@ -144,6 +124,7 @@ function preload ()
 {
     // preload assets for the game
     this.load.image('sky', 'assets/sky.png');
+    this.load.image('ground', 'assets/ground.png');
     this.load.image('textBackground', 'assets/textBackground.png');
     this.load.image('forceBackground', 'assets/forceBackground.png');
     this.load.spritesheet('buttonPlayPauseDownload', 'assets/buttonPlayPause.png', { frameWidth: 50, frameHeight: 50 });
@@ -214,7 +195,8 @@ function create ()
     startOver();
 
     // Background
-    sky             = this.add.image(500, 500, 'sky');
+    sky             = this.add.image(screenWidthPixels/2, screenHeightPixels/2, 'sky');
+    ground          = this.add.image(screenWidthPixels/2, screenHeightPixels, 'ground')
     textBackground  = this.add.image(710, 560, 'textBackground');
     forceBackground = this.add.image(710, 225, 'forceBackground');
     
@@ -235,7 +217,7 @@ function create ()
     surfaceAreaText                 = this.add.text(550, 600, `    Surface Area: ${surfaceArea} meters^2`, { fontSize: '16px', fill: '#000000' });
     massText                        = this.add.text(550, 630, `            Mass: ${mass} kilograms`, { fontSize: '16px', fill: '#000000' });
 
-    planetConstantsText             = this.add.text(600, 680, `PLANET CONSTANTS`, { fontSize: '24px', fill: '#000000' });
+    planetConstantsText             = this.add.text(600, 680, `'PLANET' CONSTANTS`, { fontSize: '24px', fill: '#000000' });
     gravitationalAccelerationText   = this.add.text(465, 720, `Gravitational Acceleration: ${gravitationalAcceleration} meters/second^2`, { fontSize: '16px', fill: '#000000' });
     fluidDensityText                = this.add.text(465, 750, `       Atmospheric Density: ${fluidDensity} kilograms/meter^2`, { fontSize: '16px', fill: '#000000' });
 
@@ -264,12 +246,14 @@ function create ()
     buttonPlayPauseDownload.setInteractive();
     // when clicked, update appearance and toggle simulation running
     buttonPlayPauseDownload.on('pointerdown', () => {
-        if (simRunning) {
-            buttonPlayPauseDownload.anims.play('play', true);
-        } else {
-            buttonPlayPauseDownload.anims.play('pause', true);
+        if (!simComplete) {
+            if (simRunning) {
+                buttonPlayPauseDownload.anims.play('play', true);
+            } else {
+                buttonPlayPauseDownload.anims.play('pause', true);
+            }
+            toggleSimRunning();
         }
-        toggleSimRunning();
     });
 
     // ---------- restart button ---------- //
@@ -517,6 +501,14 @@ function update ()
     }
     dragForceArrow.y = forceArrowOriginY - (dragForceArrow.displayHeight)/2 - 2;
 
+    // if at (or beyond 0), pause sim (future: change to download)
+    if (((screenHeightPixels * metersPerPixel) - currYPosition) <= 0) {
+        // pause sim
+        buttonPlayPauseDownload.anims.play('download', true);
+        simRunning = false;
+        simComplete = true;
+    }
+
 }
 
 // toggle if sim is running
@@ -562,6 +554,7 @@ function startOver() {
 
     // reset simRunning
     simRunning = false;
+    simComplete = false;
 }
 
 // helper function to get the next element in a dictionary
