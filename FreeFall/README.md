@@ -205,5 +205,5 @@ After a run of the simulation has completed, the Play / Pause button turns to a 
 It would record time, acceleration, velocity, and height for several instants throughout the simulation. After the simulation ends, the user would be able to click the Download button to download a .csv of the data. Users would be able to open the data in Excel, create graphs, and work with it for a class lab.
 
 ## Skydiver
-It would be fun to have the skydiver open their chute as they get closer to the ground. This would affect the Drag coefficient and the Surface area and help users understand how these specific variables impact the behavior. 
+It would be fun to have the skydiver open their chute as they get closer to the ground. This would affect the drag coefficient (Cd) and the surface area (A) and help users understand how these specific variables impact the behavior. 
 
