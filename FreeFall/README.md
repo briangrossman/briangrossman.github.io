@@ -80,9 +80,9 @@ F(net) = ma
 This article: https://philosophicalmath.wordpress.com/2017/10/21/terminal-velocity-derivation/ describes how to integrate the acceleration to get equations for v(t) and y(t). The equations are:
 
 ```
-Set b to (Cd * ρ * A)/2, i.e. the constants in the drag force. 
+Let b = (Cd * ρ * A)/2 - i.e. the constants in the drag force. 
 
-   a = (Cd * ρ * A * v^2)/2m - g
+   a = ((b * v^2)/m) - g
 v(t) = sqrt(m*g/b) * tanh( ( t * sqrt(b*g/m) ) + arctanh( v(0) * sqrt(b/(m*g)) ) )
 y(t) = (m/b) * ln( cosh( ( t * sqrt(b*g/m) ) + arctanh( v(0) * sqrt(b/(m*g)) ) )  ) 
        - y(0) 
