@@ -182,7 +182,7 @@ fluidDensity (ρ): 0.0001
 # Future Plans / Notes
 
 ## Technology
-This simulation uses [Phaser](https://phaser.io/). I consider Phaser a decent option for building out HTML interactives. Ideally, I would use the technology stack used by Explore Learning, but I'm not sure what that is. 
+This simulation uses [Phaser](https://phaser.io/). I consider Phaser a decent option for building out HTML interactives, but ideally, I would use the technology stack used by Explore Learning, but I'm not sure what that is. 
 
 I have limited experience with Phaser, but I find that it does lend itself to some less-than-ideal practices for structuring JavaScript. I ended up scoping a lot of variables broadly to ensure they were available throughout the code. Additionally, there are several functions (particularly the create and update loop) that tend to get pretty long. 
 
