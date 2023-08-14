@@ -179,7 +179,7 @@ fluidDensity (ρ): 0.0001
 [Planet images by brgfx]("https://www.freepik.com/free-vector/planets-galaxy_4228290.htm#query=solar%20system%20planets&position=14&from_view=keyword&track=ais") on Freepik
 
 
-# Future Plans / Notes
+# Future Plans / Notes on Improvements
 
 ## Technology
 This simulation uses [Phaser](https://phaser.io/). I consider Phaser a decent option for building out HTML interactives, but ideally, I would use the technology stack used by Explore Learning, but I'm not sure what that is. 
@@ -187,14 +187,14 @@ This simulation uses [Phaser](https://phaser.io/). I consider Phaser a decent op
 I have limited experience with Phaser, but I find that it does lend itself to some less-than-ideal practices for structuring JavaScript. I ended up scoping a lot of variables broadly to ensure they were available throughout the code. Additionally, there are several functions (particularly the create and update loop) that tend to get pretty long. 
 
 ## Alternate Model
-This model uses complex equations to calculate acceleration, velocity, and position over time. This solution is great for ensuring that values should be accurate and limits the possibility of compounded inaccuracies in the data. 
+This model uses complex equations to calculate acceleration, velocity, and position over time. This solution is great for ensuring that values are accurate and limits the possibility of compounded inaccuracies in the data. 
 
-That being said, I would like to try another model that approximates the values for acceleration, velocity, and position based on small deltas in time and approximating integration using an iterative method. This approach could be vulnerable to inaccuracies, particularly with slower computers where the time deltas were longer between game loop updates. 
+That being said, I would like to try another model that approximates the values for acceleration, velocity, and position based on small deltas in time and approximating integration using an iterative method. This approach could be vulnerable to inaccuracies, particularly with slower computers where the time deltas were longer between game loop updates, but would provide a solution that didn't rely on complex equations. 
 
 ## Y Orientation
-The Y orientation of Phaser being positive in the down direction and the fact that the equations for computing acceleration, velocity, and position assume the 'down' gravity direction is positive created some complexity with regard to Y orientation. I could have done a better job abstracting the Y orientation so the values were as I expected in the simulation and were only adjusted as needed for display and working with the equations.
+The Y orientation of Phaser being positive in the 'down' direction and the fact that the equations for computing acceleration, velocity, and position assume the 'down' gravity direction is positive created some complexity with regard to Y orientation. I could have done a better job abstracting the Y orientation so the values were as I expected in the simulation and were only adjusted as needed for display and working with the equations.
 
-## Height / Time Scaling and Starting Height
+## Height Scale, Time Scale, and Starting Height
 The model is programmed to support the ability to set the scale meters per pixel and set the initial height. This could be exposed to the user to allow them to change these values for their simulation.
 
 Additionally, it would be nice to allow users to set the timescale to speed up and slow down slower and quicker simulation runs. 
