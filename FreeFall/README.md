@@ -210,3 +210,6 @@ It would record time, acceleration, velocity, and height for several instants th
 ## Skydiver
 It would be fun to have the skydiver open their chute as they get closer to the ground. This would affect the drag coefficient (Cd) and the surface area (A) and help users understand how these specific variables impact the behavior. 
 
+## Bug
+There is a bug where the data is inaccurate if you start a simulation run, then switch to another tab in your browser for an extended period of time. When you return to the simulation the data may be incorrect.
+
