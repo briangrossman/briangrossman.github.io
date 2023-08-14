@@ -192,7 +192,7 @@ I have limited experience with Phaser, but I find that it does lend itself to so
 ## Alternate Model
 This model uses complex equations to calculate acceleration, velocity, and position over time. This solution is great for ensuring that values are accurate and limits the possibility of compounded inaccuracies in the data. 
 
-The files in FreeFallAlternate/ ([simulation link](https://briangrossman.github.io/FreeFallAlternate/)) use a different method for calculating values in which the integrals are approximated (essentially) using a [the Riemann sum method](https://en.wikipedia.org/wiki/Riemann_sum#Trapezoidal_rule).
+The files in FreeFallAlternate/ ([simulation link](https://briangrossman.github.io/FreeFallAlternate/)) use a different method for calculating values in which the integrals are approximated (essentially) using a [the Riemann sum method](https://en.wikipedia.org/wiki/Riemann_sum#Trapezoidal_rule). See the [Readme](https://github.com/briangrossman/briangrossman.github.io/blob/main/FreeFallAlternate/README.md) for more details.
 
 ## Y Orientation
 The Y orientation of Phaser being positive in the 'down' direction and the fact that the equations for computing acceleration, velocity, and position assume the 'down' gravity direction is positive created some complexity with regard to Y orientation. I could have done a better job abstracting the Y orientation so the values were as I expected in the simulation and were only adjusted as needed for display and working with the equations.
