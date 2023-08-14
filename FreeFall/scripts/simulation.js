@@ -24,7 +24,7 @@ var mass;                        // m: kg
 // helper constant
 var dragConstantB;               // b: is (Cd * ρ * A)/2, i.e. the constants in the drag force. 
 
-// Initial values
+// Screen Variables
 var screenHeightPixels  = 800;
 var screenWidthPixels   = 1000;
 
@@ -32,6 +32,11 @@ var forceArrowOriginX   = 880;
 var forceArrowOriginY   = 230;
 var forceArrowMaxHeight = 80;
 
+var topOfScreenHeight = 1100;
+var metersPerPixel = topOfScreenHeight/screenHeightPixels; 
+
+
+// Position / Force Variables
 var initXPosition       = 200;
 var initYPosition       = 100;
 var currYPosition;
@@ -45,11 +50,16 @@ var currAcceleration;
 var gravitationalForce;
 var dragForce;
 
-
-// Settings
-var topOfScreenHeight = 1100;
-var metersPerPixel = topOfScreenHeight/screenHeightPixels; 
 var useAirDrag = false;
+
+// Time Vars (in seconds)
+var lastTimeCheck;
+var totalTimeElapsed = 0;
+
+// Flags
+var simRunning = false; 
+var simComplete = false;
+
 
 // background
 var sky;
@@ -76,7 +86,6 @@ var gravitationalForceArrow;
 var dragForceText;
 var dragForceArrow;
 
-
 var buttonPlayPauseDownload;
 var buttonRestart;
 var objectsChoice;
@@ -84,15 +93,8 @@ var object;
 var planetsChoice;
 
 
-// Time Vars (in seconds)
-var lastTimeCheck;
-var totalTimeElapsed = 0;
-var simRunning = false; 
-var simComplete = false;
-
-
-
 // config Phaser
+// Note that gravity is turned off to allow us to control it
 var config = {
     type: Phaser.AUTO,
     width: screenWidthPixels,
@@ -119,7 +121,9 @@ var config = {
 };
 var game = new Phaser.Game(config);
 
-
+/**************************************
+ *               PRELOAD              *
+ **************************************/
 function preload ()
 {
     // preload assets for the game
@@ -136,9 +140,18 @@ function preload ()
     this.load.image('arrow', 'assets/forceArrow.png');
 }
 
+/**************************************
+ *               CREATE               *
+ **************************************/
 function create ()
 {
-    // initialize objectsDict to contain properties for each object
+
+    /**************************************
+     * objectsDict
+     * 
+     * initialize objectsDict to contain properties for each object
+     * inital object: "sphere"
+     **************************************/
     objectsDict = {
         "sphere": {
             "dragCoefficient": 0.5,
@@ -161,9 +174,16 @@ function create ()
             "mass": 90,
         },
     };
+    // initialize currObject and currPlanet
+    currObject = "sphere";
     
-    // initialize planetsDict to contain properties for each celestial body
-    // note that gravitationalAcceleration is positive due to the inverted y axis
+    /**************************************
+     * planetsDict / currPlanet
+     * 
+     * initialize planetsDict to contain properties for each celestial body
+     * note that gravitationalAcceleration is positive due to the inverted y axis
+     * initial planet: "earth"
+     **************************************/
     planetsDict = {
         "earth": {
             "gravitationalAcceleration": 9.81,
@@ -186,21 +206,23 @@ function create ()
             "fluidDensity": 0.0001,
         },
     };
-
-    // initialize currObject and currPlanet
-    currObject = "sphere";
+    // initialize currPlanet
     currPlanet = "earth";
-    
+
     // initialize the game
     startOver();
 
-    // Background
+
+    /**************************************
+     *             UI stuff               *
+     **************************************/
+
+    // Background UI
     sky             = this.add.image(screenWidthPixels/2, screenHeightPixels/2, 'sky');
     ground          = this.add.image(screenWidthPixels/2, screenHeightPixels, 'ground')
     textBackground  = this.add.image(710, 560, 'textBackground');
     forceBackground = this.add.image(710, 225, 'forceBackground');
     
-
     // Text
     forcesText                      = this.add.text(660, 165, `FORCES`, { fontSize: '24px', fill: '#000000' });
     dragForceText                   = this.add.text(480, 205, `         Drag Force: ${dragForce.toFixed(2)} newtons`, { fontSize: '16px', fill: '#000000' });
@@ -225,7 +247,10 @@ function create ()
     sky.setScale(2);
 
     
-    // ---------- play | pause | download button ---------- //
+    
+    /********************************** 
+     * play | pause | download button *
+     **********************************/
     this.anims.create({
         key: 'play',
         frames: [ { key: 'buttonPlayPauseDownload', frame: 0 } ],
@@ -256,7 +281,9 @@ function create ()
         }
     });
 
-    // ---------- restart button ---------- //
+    /****************** 
+     * restart button *
+     ******************/
     buttonRestart = this.add.sprite(960, 40, 'buttonRestart');
     buttonRestart.setInteractive();
     // when clicked, update appearance and toggle simulation running
@@ -266,7 +293,9 @@ function create ()
         startOver();
     });
 
-    // ---------- air | vacuum button ---------- //
+    /***********************
+     * air | vacuum button *
+     ***********************/
     this.anims.create({
         key: 'air',
         frames: [ { key: 'buttonAirVacuum', frame: 0 } ],
@@ -299,7 +328,9 @@ function create ()
         
     });
 
-    // ---------- objects and objects choice button ---------- //
+    /***********
+     * objects *
+     ***********/
     this.anims.create({
         key: 'sphere',
         frames: [ { key: 'object', frame: 0 } ],
@@ -323,7 +354,9 @@ function create ()
     object = this.add.sprite(initXPosition, initYPosition / metersPerPixel, 'object');
     object.anims.play(currObject, true); 
 
-    // ---------- objects selector ---------- //
+    /********************
+     * objects selector *
+     ********************/
     this.anims.create({
         key: 'sphereChoice',
         frames: [ { key: 'objectsChoice', frame: 0 } ],
@@ -363,7 +396,9 @@ function create ()
         
     });
 
-    // ---------- planet selector ---------- //
+    /*******************
+     * planet selector *
+     *******************/
     this.anims.create({
         key: 'earth', 
         frames: [ { key: 'planetsChoice', frame: 0 } ],
@@ -407,7 +442,9 @@ function create ()
         
     });
 
-    // ---------- force arrows ---------- //
+    /****************
+     * force arrows *
+     ****************/
     gravitationalForceArrow = this.add.sprite(forceArrowOriginX, forceArrowOriginY, 'arrow');
     gravitationalForceArrow.flipY = true;
     gravitationalForceArrow.displayWidth = 15;
@@ -420,6 +457,9 @@ function create ()
 
 }
 
+/**************************************
+ *               UPDATE               *
+ **************************************/
 function update ()
 {
     if (simRunning) {
@@ -428,7 +468,7 @@ function update ()
         currTime = new Date().getTime()/1000;
         totalTimeElapsed += (currTime - lastTimeCheck);
         
-        // get acceleration, velocity, and y position 
+        // get acceleration, velocity, and y position - see README for details
         // moon has no atmosphere and therefore would behave like vacuum
         if (useAirDrag && (currPlanet != 'moon')) {
             /* air drag
@@ -452,13 +492,13 @@ function update ()
 
 
         } else {
-            /* no air drag
+            /* no air drag - see README for details
 
               Acceleration: a = -g
                   Velocity: v = v0 + gt 
                   Position: y = y0 + (v0 * t) + (g * t^2)/2
             */
-            currAcceleration    = gravitationalAcceleration; // constant acceleration
+            currAcceleration    = gravitationalAcceleration;
             currYVelocity       = initYVelocity + (gravitationalAcceleration * totalTimeElapsed);
             currYPosition       = initYPosition + (initYVelocity * totalTimeElapsed) + (0.5 * gravitationalAcceleration * totalTimeElapsed * totalTimeElapsed);
             gravitationalForce  = gravitationalAcceleration * mass;
@@ -485,26 +525,30 @@ function update ()
     gravitationalForceText.setText(`Gravitational Force: ${gravitationalForce.toFixed(2)} newtons`);
     dragForceText.setText(`         Drag Force: ${dragForce.toFixed(2)} newtons`);
 
-    // update force arrows - gravitation is maxed out, if object is accelerating
+    // update gravitational force arrow (gravitation is max size)
+    // nonzero if object has acceleration
     if (currAcceleration != 0) {
         gravitationalForceArrow.displayHeight = forceArrowMaxHeight;
     } else {
         gravitationalForceArrow.displayHeight = 0;
     }
+    // position because position is based on center of the sprite
     gravitationalForceArrow.y = forceArrowOriginY + (gravitationalForceArrow.displayHeight)/2 + 2;
 
     // drag force arrow is porportional to gravitational
+    // nonzero if object has velocity
     if (currYVelocity != 0) {
         dragForceArrow.displayHeight = gravitationalForceArrow.displayHeight * dragForce / gravitationalForce;
     } else {
         dragForceArrow.displayHeight = 0;
     }
+    // position because position is based on center of the sprite
     dragForceArrow.y = forceArrowOriginY - (dragForceArrow.displayHeight)/2 - 2;
 
-    // if at (or beyond 0), pause sim (future: change to download)
+    // if at (or beyond 0), pause sim
     if (((screenHeightPixels * metersPerPixel) - currYPosition) <= 0) {
         // pause sim
-        buttonPlayPauseDownload.anims.play('download', true);
+        buttonPlayPauseDownload.anims.play('download', true); // show download button for future imlpementation
         simRunning = false;
         simComplete = true;
     }
