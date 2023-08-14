@@ -53,7 +53,7 @@ Acceleration: a = -g
 First find an equation for acceleration using the ubiquitous `F = ma`. For this system, we will assume all movement is linear in the `y` direction, so the total force is the sum of the force vectors due to gravity (down) and air resistance/drag (up). 
 
 ```
-F(total_y) = F(drag) - F(gravity)
+F(net) = F(drag) - F(gravity)
 
 F(gravity) = mg (newtons)
 -   m: mass (kg)
@@ -71,7 +71,7 @@ Note that as the magnitude of the drag force is proportional to the square of th
 Solving for acceleration:
 
 ```
-F(total_y) = ma
+F(net) = ma
         ma = F(drag) - F(gravity)
         ma = (Cd * ρ * A * v^2)/2 - mg
          a = (Cd * ρ * A * v^2)/2m - g
