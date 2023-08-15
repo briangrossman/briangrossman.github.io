@@ -2,7 +2,7 @@
   NOTES
 
   In phaser, the top of the screen is y == 0
-  Y values are therefor inverted
+  Y values are therefore inverted
 */
 
 
