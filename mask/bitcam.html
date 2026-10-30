@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
+<title>Bitcam</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;600&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
+<style>
+/* Layout: one-screen display — a slim top bar over a full-bleed field of 1s and 0s. Single dark look by choice. */
+:root {
+  --ink: #030805;        /* screen ground */
+  --panel: #07120b;      /* top bar */
+  --line: #12301c;       /* hairlines */
+  --text: #b8f5c8;       /* UI text */
+  --muted: #4f8a62;      /* labels */
+  --green: #3dff7a;      /* phosphor accent */
+  --glyph: "Martian Mono", "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --ui: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--ink); color: var(--text); font-family: var(--ui); font-size: 14px;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+button {
+  font: 600 13px var(--ui); color: var(--ink); background: var(--green);
+  border: 1px solid var(--green); border-radius: 4px; padding: 6px 12px; cursor: pointer;
+}
+button:hover { filter: brightness(1.1); }
+button:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+main { position: relative; flex: 1; min-height: 0; }
+canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#startBtn {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  font-size: 17px; padding: 14px 28px; border-radius: 6px; letter-spacing: 0.02em;
+  box-shadow: 0 0 32px rgba(61,255,122,0.25);
+}
+#startBtn:hover { filter: none; box-shadow: 0 0 44px rgba(61,255,122,0.4); }
+#stopBtn {
+  position: absolute; top: 12px; right: max(16px, env(safe-area-inset-right, 0px));
+  background: rgba(3,8,5,0.8); color: var(--text); border-color: var(--line);
+}
+.toast {
+  position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); bottom: 12px; max-width: min(360px, 70vw);
+  font-size: 13px; background: var(--panel); border: 1px solid var(--line); padding: 6px 10px; border-radius: 4px;
+}
+</style>
+
+<main>
+  <canvas id="screen"></canvas>
+  <button id="startBtn">Start camera</button>
+  <button id="stopBtn" hidden>Stop camera</button>
+  <div class="toast" id="toast" hidden></div>
+</main>
+
+<script>
+(() => {
+  const COLS = 150, CONTRAST = 1.3, CELL_ASPECT = 0.6, FLOOR = 0.12;
+  const $ = id => document.getElementById(id);
+  const screen = $("screen"), ctx = screen.getContext("2d");
+  const sampler = document.createElement("canvas");
+  const sctx = sampler.getContext("2d", { willReadFrequently: true });
+  const video = document.createElement("video");
+  video.muted = true; video.playsInline = true;
+  let stream = null;
+
+  let W = 0, H = 0, dpr = 1;
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = screen.clientWidth; H = screen.clientHeight;
+    screen.width = Math.round(W * dpr); screen.height = Math.round(H * dpr);
+  }
+  new ResizeObserver(resize).observe(screen);
+
+  // 16 shades of green, dark to bright
+  const greens = Array.from({ length: 16 }, (_, b) => {
+    const l = FLOOR + (1 - FLOOR) * (b / 15);
+    const g = Math.round(40 + 215 * l);
+    const rb = Math.round(Math.max(0, l - 0.55) * 2.2 * 200); // highlights lean toward white-green
+    return `rgb(${rb},${g},${Math.round(rb * 0.75 + 20 * l)})`;
+  });
+
+  function clear() {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = "#030805"; ctx.fillRect(0, 0, W, H);
+  }
+
+  function frame() {
+    requestAnimationFrame(frame);
+    if (!W || !H || !stream || video.readyState < 2) return;
+    const src = video, sw = video.videoWidth, sh = video.videoHeight;
+    if (!sw || !sh) return;
+    const live = true;
+
+    const cols = COLS, cellW = W / cols, cellH = cellW / CELL_ASPECT;
+    const rows = Math.max(1, Math.floor(H / cellH));
+
+    // cover-fit crop to the grid's aspect
+    const target = (cols * cellW) / (rows * cellH);
+    let cw = sw, ch = sh;
+    if (sw / sh > target) cw = sh * target; else ch = sw / target;
+    const cx = (sw - cw) / 2, cy = (sh - ch) / 2;
+
+    if (sampler.width !== cols || sampler.height !== rows) { sampler.width = cols; sampler.height = rows; }
+    sctx.save();
+    if (live) { sctx.translate(cols, 0); sctx.scale(-1, 1); } // mirror the selfie camera
+    sctx.drawImage(src, cx, cy, cw, ch, 0, 0, cols, rows);
+    sctx.restore();
+    const px = sctx.getImageData(0, 0, cols, rows).data;
+
+    const n = cols * rows, lum = new Float32Array(n);
+    for (let i = 0, p = 0; i < n; i++, p += 4) {
+      let l = (0.2126 * px[p] + 0.7152 * px[p + 1] + 0.0722 * px[p + 2]) / 255;
+      l = (l - 0.5) * CONTRAST + 0.5;
+      lum[i] = l < 0 ? 0 : l > 1 ? 1 : l;
+    }
+
+    // Serpentine Floyd–Steinberg dithering: 1 = bright, 0 = dark
+    const bits = new Uint8Array(n), e = Float32Array.from(lum);
+    for (let r = 0; r < rows; r++) {
+      const ltr = (r & 1) === 0, dir = ltr ? 1 : -1;
+      for (let k = 0; k < cols; k++) {
+        const c = ltr ? k : cols - 1 - k, i = r * cols + c;
+        const b = e[i] >= 0.5 ? 1 : 0, err = e[i] - b;
+        bits[i] = b;
+        const cn = c + dir;
+        if (cn >= 0 && cn < cols) e[i + dir] += err * 7 / 16;
+        if (r + 1 < rows) {
+          const d = i + cols;
+          if (c - dir >= 0 && c - dir < cols) e[d - dir] += err * 3 / 16;
+          e[d] += err * 5 / 16;
+          if (cn >= 0 && cn < cols) e[d + dir] += err / 16;
+        }
+      }
+    }
+
+    // Draw, tinting each digit by the brightness beneath it
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = "#030805"; ctx.fillRect(0, 0, W, H);
+    ctx.font = `600 ${cellH * 0.92}px "Martian Mono", "IBM Plex Mono", monospace`;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    const oy = (H - rows * cellH) / 2;
+    const buckets = Array.from({ length: 16 }, () => []);
+    for (let i = 0; i < n; i++) buckets[Math.min(15, Math.floor(lum[i] * 16))].push(i);
+    for (let b = 0; b < 16; b++) {
+      if (!buckets[b].length) continue;
+      ctx.fillStyle = greens[b];
+      for (const i of buckets[b]) {
+        const r = (i / cols) | 0, c = i - r * cols;
+        ctx.fillText(bits[i] ? "1" : "0", (c + 0.5) * cellW, oy + (r + 0.5) * cellH);
+      }
+    }
+  }
+
+  const startBtn = $("startBtn"), stopBtn = $("stopBtn");
+  stopBtn.addEventListener("click", () => {
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    stream = null; video.srcObject = null;
+    clear(); stopBtn.hidden = true; startBtn.hidden = false; startBtn.focus();
+  });
+  startBtn.addEventListener("click", async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      toast("This browser can't reach a camera here. Open the page as a local file or from a website using https.");
+      return;
+    }
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+      video.srcObject = stream; await video.play();
+      startBtn.hidden = true; stopBtn.hidden = false;
+    } catch (e) {
+      stream = null;
+      toast(e && e.name === "NotAllowedError" ? "Camera access was blocked. Allow it in your browser's site settings and try again."
+          : e && e.name === "NotFoundError" ? "No camera was found. Connect one and try again."
+          : "The camera couldn't start here. Open the page as a local file or from a website using https.");
+    }
+  });
+
+  let tt;
+  function toast(msg) {
+    const el = $("toast"); el.textContent = msg; el.hidden = false;
+    clearTimeout(tt); tt = setTimeout(() => el.hidden = true, 5000);
+  }
+
+  resize(); clear();
+  new ResizeObserver(() => { if (!stream) clear(); }).observe(screen);
+  const boot = () => requestAnimationFrame(frame);
+  (document.fonts?.load ? document.fonts.load('600 40px "Martian Mono"').catch(() => {}) : Promise.resolve()).then(boot);
+})();
+</script>
+
+</body></html>
